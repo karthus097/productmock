@@ -844,19 +844,18 @@
 <body>
     <div class="container">
         <header>
-            <span class="task-badge">Task 1</span>
             <h1>Embossed Notebook Design Generator</h1>
             <p class="subtitle">Generate prompts for creating embossed notebook designs in ChatGPT</p>
         </header>
 
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('generator')">Prompt Generator</button>
+            <button class="tab active" onclick="switchTab('inspiration')">Inspiration Library</button>
             <button class="tab" onclick="switchTab('designs')">Design Library</button>
-            <button class="tab" onclick="switchTab('inspiration')">Inspiration Library</button>
+            <button class="tab" onclick="switchTab('generator')">1. Design to Product Image Mockup</button>
         </div>
 
         <!-- Generator Tab -->
-        <div id="generator-tab" class="tab-content active">
+        <div id="generator-tab" class="tab-content">
             <div class="instructions">
                 <h3>How to use</h3>
                 <ol>
@@ -1086,7 +1085,7 @@
         </div>
 
         <!-- Inspiration Library Tab -->
-        <div id="inspiration-tab" class="tab-content">
+        <div id="inspiration-tab" class="tab-content active">
             <div class="gallery-header">
                 <h2>Inspiration Library</h2>
                 <div class="gallery-actions">
@@ -1096,6 +1095,17 @@
                     <button class="btn btn-secondary btn-sm" onclick="loadInspirations()">
                         Refresh
                     </button>
+                </div>
+            </div>
+
+            <!-- Paste Explainer -->
+            <div class="explainer-box" style="background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; border-left: 4px solid #a855f7;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 28px;">📋</span>
+                    <div>
+                        <div style="font-weight: 600; color: #6b21a8; margin-bottom: 2px;">Quick Upload: Copy & Paste</div>
+                        <div style="font-size: 13px; color: #7c3aed;">Copy any inspiration image, fill in the description below, then press <kbd style="background: white; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; border: 1px solid #d8b4fe;">Ctrl+V</kbd> to instantly upload</div>
+                    </div>
                 </div>
             </div>
 
@@ -2052,6 +2062,7 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             generatePrompt();
+            loadInspirations(); // Load inspirations since it's the default tab
         });
 
         document.getElementById('imageB').addEventListener('input', generatePrompt);
