@@ -202,7 +202,7 @@
             font-weight: 600;
         }
 
-        .copy-btn {
+        .copy-btn, .btn {
             display: flex;
             align-items: center;
             gap: 6px;
@@ -217,11 +217,11 @@
             transition: background 0.2s, transform 0.1s;
         }
 
-        .copy-btn:hover {
+        .copy-btn:hover, .btn:hover {
             background: #333;
         }
 
-        .copy-btn:active {
+        .copy-btn:active, .btn:active {
             transform: scale(0.98);
         }
 
@@ -229,9 +229,27 @@
             background: #22c55e;
         }
 
-        .copy-btn svg {
+        .copy-btn svg, .btn svg {
             width: 16px;
             height: 16px;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #1a1a1a;
+            border: 2px solid #e5e5e5;
+        }
+
+        .btn-secondary:hover {
+            background: #f5f5f5;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
         }
 
         .output-content {
@@ -304,6 +322,279 @@
             cursor: not-allowed;
         }
 
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+            border-bottom: 2px solid #e5e5e5;
+            padding-bottom: 0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            background: none;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .tab:hover {
+            color: #333;
+        }
+
+        .tab.active {
+            color: #1a1a1a;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #1a1a1a;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Design Gallery */
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .gallery-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .gallery-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .upload-zone {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fafafa;
+            margin-bottom: 24px;
+        }
+
+        .upload-zone:hover {
+            border-color: #a855f7;
+            background: #faf5ff;
+        }
+
+        .upload-zone.dragover {
+            border-color: #a855f7;
+            background: #f3e8ff;
+        }
+
+        .upload-zone-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .upload-zone-text {
+            font-size: 15px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .upload-zone-hint {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .design-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .design-item {
+            background: white;
+            border: 2px solid #e5e5e5;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .design-item:hover {
+            border-color: #a855f7;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .design-item-image {
+            aspect-ratio: 1;
+            background: #f8f8f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .design-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .design-item-info {
+            padding: 12px;
+        }
+
+        .design-item-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .design-item-date {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .design-item-actions {
+            display: flex;
+            gap: 8px;
+            padding: 0 12px 12px;
+        }
+
+        .design-item-actions button {
+            flex: 1;
+            padding: 8px;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-hint {
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e5e5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+            line-height: 1;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-preview {
+            width: 100%;
+            aspect-ratio: 1;
+            background: #f8f8f8;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .modal-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 24px 16px;
@@ -322,6 +613,23 @@
                 gap: 12px;
                 align-items: stretch;
             }
+
+            .tabs {
+                overflow-x: auto;
+            }
+
+            .gallery-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .gallery-actions {
+                justify-content: stretch;
+            }
+
+            .gallery-actions button {
+                flex: 1;
+            }
         }
     </style>
 </head>
@@ -333,109 +641,161 @@
             <p class="subtitle">Generate prompts for creating embossed notebook designs in ChatGPT</p>
         </header>
 
-        <div class="instructions">
-            <h3>How to use</h3>
-            <ol>
-                <li>Select a base notebook color from the dropdown</li>
-                <li>Describe your design artwork (Image B)</li>
-                <li>Upload the 3 images shown below into ChatGPT</li>
-                <li>Copy the generated prompt and paste it into ChatGPT</li>
-            </ol>
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('generator')">Prompt Generator</button>
+            <button class="tab" onclick="switchTab('designs')">Design Library</button>
         </div>
 
-        <div class="input-section">
-            <div class="input-group">
-                <label>
-                    Image A — Base Notebook Color
-                </label>
-                <select id="notebookColor" onchange="updateImages()">
-                    <option value="blue">Blue</option>
-                    <option value="grey">Grey</option>
-                    <option value="pink">Pink</option>
-                    <option value="purple">Purple</option>
-                </select>
+        <!-- Generator Tab -->
+        <div id="generator-tab" class="tab-content active">
+            <div class="instructions">
+                <h3>How to use</h3>
+                <ol>
+                    <li>Select a base notebook color from the dropdown</li>
+                    <li>Describe your design artwork (Image B)</li>
+                    <li>Upload the 3 images shown below into ChatGPT</li>
+                    <li>Copy the generated prompt and paste it into ChatGPT</li>
+                </ol>
             </div>
 
-            <div class="input-group image-b-group">
-                <label>
-                    Image B — Design Description
-                </label>
-                <div class="input-with-hint">
+            <div class="input-section">
+                <div class="input-group">
+                    <label>
+                        Image A — Base Notebook Color
+                    </label>
+                    <select id="notebookColor" onchange="updateImages()">
+                        <option value="blue">Blue</option>
+                        <option value="grey">Grey</option>
+                        <option value="pink">Pink</option>
+                        <option value="purple">Purple</option>
+                    </select>
+                </div>
+
+                <div class="input-group image-b-group">
+                    <label>
+                        Image B — Design Description
+                    </label>
+                    <div class="input-with-hint">
+                        <input
+                            type="text"
+                            id="imageB"
+                            placeholder="e.g., watercolour art, geometric pattern, floral illustration"
+                            value="watercolour art"
+                        >
+                        <div class="explainer-hint">
+                            <span class="hand-pointer">👆</span>
+                            <span class="hint-text">Describe the design you're uploading to mockup</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>
+                        Image C — Embossing Reference
+                        <span class="label-hint">(fixed)</span>
+                    </label>
                     <input
                         type="text"
-                        id="imageB"
-                        placeholder="e.g., watercolour art, geometric pattern, floral illustration"
-                        value="watercolour art"
+                        id="imageC"
+                        value="A blue PU notebook with an embossed dog design"
+                        readonly
+                        class="readonly-input"
                     >
-                    <div class="explainer-hint">
-                        <span class="hand-pointer">👆</span>
-                        <span class="hint-text">Describe the design you're uploading to mockup</span>
+                </div>
+            </div>
+
+            <h3 style="font-size: 14px; margin-bottom: 16px; color: #333;">Images to upload to ChatGPT <span style="font-weight: 400; color: #999;">(you can copy & paste directly)</span></h3>
+
+            <div class="image-grid">
+                <div class="image-card">
+                    <div class="image-card-header">
+                        <h4>Image A — Base Notebook</h4>
+                        <span id="imageALabel">blue.png</span>
+                    </div>
+                    <div class="image-preview">
+                        <img id="imageAPreview" src="Template Images for Product Listing/blue.png" alt="Base notebook">
+                    </div>
+                </div>
+
+                <div class="image-card">
+                    <div class="image-card-header">
+                        <h4>Image C — Embossing Reference</h4>
+                        <span>bluedog.png</span>
+                    </div>
+                    <div class="image-preview">
+                        <img src="Template Images for Product Listing/bluedog.png" alt="Embossing reference">
+                    </div>
+                </div>
+
+                <div class="image-card full-width">
+                    <div class="image-card-header">
+                        <h4>Image B — Your Design</h4>
+                        <span>Upload your own artwork or select from Design Library</span>
+                    </div>
+                    <div class="image-preview" id="imageBPreview" style="min-height: 100px; color: #888; font-size: 14px;">
+                        <span id="imageBPlaceholder">Upload your design artwork to ChatGPT</span>
+                        <img id="imageBSelected" style="display: none;" alt="Selected design">
                     </div>
                 </div>
             </div>
 
-            <div class="input-group">
-                <label>
-                    Image C — Embossing Reference
-                    <span class="label-hint">(fixed)</span>
-                </label>
-                <input
-                    type="text"
-                    id="imageC"
-                    value="A blue PU notebook with an embossed dog design"
-                    readonly
-                    class="readonly-input"
-                >
-            </div>
-        </div>
-
-        <h3 style="font-size: 14px; margin-bottom: 16px; color: #333;">Images to upload to ChatGPT <span style="font-weight: 400; color: #999;">(you can copy & paste directly)</span></h3>
-
-        <div class="image-grid">
-            <div class="image-card">
-                <div class="image-card-header">
-                    <h4>Image A — Base Notebook</h4>
-                    <span id="imageALabel">blue.png</span>
+            <div class="output-section">
+                <div class="output-header">
+                    <h2>Generated Prompt</h2>
+                    <button class="copy-btn" onclick="copyPrompt()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        <span id="copyText">Copy Prompt</span>
+                    </button>
                 </div>
-                <div class="image-preview">
-                    <img id="imageAPreview" src="Template Images for Product Listing/blue.png" alt="Base notebook">
-                </div>
-            </div>
-
-            <div class="image-card">
-                <div class="image-card-header">
-                    <h4>Image C — Embossing Reference</h4>
-                    <span>bluedog.png</span>
-                </div>
-                <div class="image-preview">
-                    <img src="Template Images for Product Listing/bluedog.png" alt="Embossing reference">
-                </div>
-            </div>
-
-            <div class="image-card full-width">
-                <div class="image-card-header">
-                    <h4>Image B — Your Design</h4>
-                    <span>Upload your own artwork</span>
-                </div>
-                <div class="image-preview" style="min-height: 100px; color: #888; font-size: 14px;">
-                    Upload your design artwork to ChatGPT
+                <div class="output-content">
+                    <div id="promptOutput"></div>
                 </div>
             </div>
         </div>
 
-        <div class="output-section">
-            <div class="output-header">
-                <h2>Generated Prompt</h2>
-                <button class="copy-btn" onclick="copyPrompt()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                    <span id="copyText">Copy Prompt</span>
-                </button>
+        <!-- Design Library Tab -->
+        <div id="designs-tab" class="tab-content">
+            <div class="gallery-header">
+                <h2>Design Library</h2>
+                <div class="gallery-actions">
+                    <button class="btn btn-secondary" onclick="exportDesigns()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Export
+                    </button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        Import
+                    </button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importDesigns(event)">
+                </div>
             </div>
-            <div class="output-content">
-                <div id="promptOutput"></div>
+
+            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-zone-icon">📁</div>
+                <div class="upload-zone-text">Drop your design images here or click to upload</div>
+                <div class="upload-zone-hint">Supports PNG, JPG, WEBP</div>
+                <input type="file" id="fileInput" accept="image/*" multiple style="display: none;" onchange="handleFileUpload(event)">
+            </div>
+
+            <div id="designGrid" class="design-grid">
+                <!-- Designs will be populated here -->
+            </div>
+
+            <div id="emptyState" class="empty-state">
+                <div class="empty-state-icon">🎨</div>
+                <div class="empty-state-text">No designs uploaded yet</div>
+                <div class="empty-state-hint">Upload your first design to get started</div>
             </div>
         </div>
 
@@ -444,7 +804,44 @@
         </footer>
     </div>
 
+    <!-- Preview Modal -->
+    <div class="modal-overlay" id="previewModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Design Preview</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-preview">
+                    <img id="modalImage" src="" alt="Design preview">
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="useDesign()">Use in Generator</button>
+                    <button class="btn btn-danger" onclick="deleteDesign()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Design storage
+        let designs = JSON.parse(localStorage.getItem('designs') || '[]');
+        let currentDesignId = null;
+
+        // Tab switching
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+            document.getElementById(`${tab}-tab`).classList.add('active');
+
+            if (tab === 'designs') {
+                renderDesigns();
+            }
+        }
+
+        // Color descriptions
         const colorDescriptions = {
             blue: 'A PLAIN blue PU-leather notebook',
             grey: 'A PLAIN grey PU-leather notebook',
@@ -613,8 +1010,160 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
             });
         }
 
-        // Generate prompt on page load and on input change
-        document.addEventListener('DOMContentLoaded', generatePrompt);
+        // Design Library Functions
+        function handleFileUpload(event) {
+            const files = event.target.files;
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const design = {
+                            id: Date.now() + Math.random(),
+                            name: file.name,
+                            data: e.target.result,
+                            date: new Date().toISOString()
+                        };
+                        designs.push(design);
+                        saveDesigns();
+                        renderDesigns();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            event.target.value = '';
+        }
+
+        function saveDesigns() {
+            localStorage.setItem('designs', JSON.stringify(designs));
+        }
+
+        function renderDesigns() {
+            const grid = document.getElementById('designGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            if (designs.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            emptyState.style.display = 'none';
+
+            grid.innerHTML = designs.map(design => `
+                <div class="design-item" onclick="openPreview('${design.id}')">
+                    <div class="design-item-image">
+                        <img src="${design.data}" alt="${design.name}">
+                    </div>
+                    <div class="design-item-info">
+                        <div class="design-item-name">${design.name}</div>
+                        <div class="design-item-date">${new Date(design.date).toLocaleDateString()}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openPreview(id) {
+            currentDesignId = id;
+            const design = designs.find(d => d.id == id);
+            if (design) {
+                document.getElementById('modalTitle').textContent = design.name;
+                document.getElementById('modalImage').src = design.data;
+                document.getElementById('previewModal').classList.add('active');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('previewModal').classList.remove('active');
+            currentDesignId = null;
+        }
+
+        function useDesign() {
+            const design = designs.find(d => d.id == currentDesignId);
+            if (design) {
+                document.getElementById('imageBPlaceholder').style.display = 'none';
+                document.getElementById('imageBSelected').src = design.data;
+                document.getElementById('imageBSelected').style.display = 'block';
+                closeModal();
+                switchTab('generator');
+            }
+        }
+
+        function deleteDesign() {
+            if (confirm('Are you sure you want to delete this design?')) {
+                designs = designs.filter(d => d.id != currentDesignId);
+                saveDesigns();
+                renderDesigns();
+                closeModal();
+            }
+        }
+
+        function exportDesigns() {
+            const dataStr = JSON.stringify(designs, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `designs-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importDesigns(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        if (Array.isArray(imported)) {
+                            designs = [...designs, ...imported];
+                            saveDesigns();
+                            renderDesigns();
+                            alert(`Imported ${imported.length} designs!`);
+                        }
+                    } catch (err) {
+                        alert('Invalid file format');
+                    }
+                };
+                reader.readAsText(file);
+            }
+            event.target.value = '';
+        }
+
+        // Drag and drop
+        const uploadZone = document.getElementById('uploadZone');
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            document.getElementById('fileInput').files = files;
+            handleFileUpload({ target: { files } });
+        });
+
+        // Close modal on overlay click
+        document.getElementById('previewModal').addEventListener('click', (e) => {
+            if (e.target.id === 'previewModal') {
+                closeModal();
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            generatePrompt();
+            renderDesigns();
+        });
+
         document.getElementById('imageB').addEventListener('input', generatePrompt);
     </script>
 </body>
