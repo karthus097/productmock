@@ -879,7 +879,7 @@
         const BUCKET_NAME = 'designs';
 
         // Initialize Supabase client
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Design storage
         let designs = [];
@@ -1091,7 +1091,7 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
             setSyncStatus('syncing', 'Loading...');
 
             try {
-                const { data, error } = await supabase.storage
+                const { data, error } = await supabaseClient.storage
                     .from(BUCKET_NAME)
                     .list('', {
                         limit: 100,
@@ -1162,7 +1162,7 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
                     const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
                     const fileName = `${timestamp}_${safeName}`;
 
-                    const { error } = await supabase.storage
+                    const { error } = await supabaseClient.storage
                         .from(BUCKET_NAME)
                         .upload(fileName, file, {
                             cacheControl: '3600',
@@ -1219,7 +1219,7 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
             deleteBtn.textContent = 'Deleting...';
 
             try {
-                const { error } = await supabase.storage
+                const { error } = await supabaseClient.storage
                     .from(BUCKET_NAME)
                     .remove([currentDesign.name]);
 
