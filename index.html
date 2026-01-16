@@ -1103,6 +1103,26 @@
             <div class="upload-form">
                 <h3>Upload Inspiration Image</h3>
 
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="inspirationCategory">
+                            <option value="Animal">Animal</option>
+                            <option value="Floral">Floral</option>
+                            <option value="Pastel">Pastel</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Designer</label>
+                        <select id="inspirationDesigner">
+                            <option value="Helen">Helen</option>
+                            <option value="David">David</option>
+                            <option value="Feb">Feb</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label>Description <span style="font-weight: 400; color: #999;">(This will be used in the generator)</span></label>
                     <input type="text" id="inspirationDescription" placeholder="e.g., watercolour floral pattern, geometric abstract art, cute animal illustration">
@@ -1113,6 +1133,28 @@
                     <div class="upload-zone-text" id="inspirationUploadText">Drop inspiration images here or click to upload</div>
                     <div class="upload-zone-hint">Supports PNG, JPG, WEBP</div>
                     <input type="file" id="inspirationFileInput" accept="image/*" multiple style="display: none;" onchange="handleInspirationUpload(event)">
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Category:</label>
+                    <select id="filterInspirationCategory" onchange="loadInspirations()">
+                        <option value="">All</option>
+                        <option value="Animal">Animal</option>
+                        <option value="Floral">Floral</option>
+                        <option value="Pastel">Pastel</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Designer:</label>
+                    <select id="filterInspirationDesigner" onchange="loadInspirations()">
+                        <option value="">All</option>
+                        <option value="Helen">Helen</option>
+                        <option value="David">David</option>
+                        <option value="Feb">Feb</option>
+                    </select>
                 </div>
             </div>
 
@@ -1705,10 +1747,23 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
             setInspirationSyncStatus('syncing', 'Loading...');
 
             try {
-                const { data, error } = await supabaseClient
+                // Build query with filters
+                let query = supabaseClient
                     .from('inspirations')
                     .select('*')
                     .order('created_at', { ascending: false });
+
+                const filterCategory = document.getElementById('filterInspirationCategory').value;
+                const filterDesigner = document.getElementById('filterInspirationDesigner').value;
+
+                if (filterCategory) {
+                    query = query.eq('category', filterCategory);
+                }
+                if (filterDesigner) {
+                    query = query.eq('designer', filterDesigner);
+                }
+
+                const { data, error } = await query;
 
                 if (error) throw error;
 
@@ -1744,9 +1799,8 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
                     <div class="design-item-info">
                         <div class="design-item-name">${insp.description || insp.file_name}</div>
                         <div class="design-item-tags">
-                            <span class="tag" style="background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); color: #7c3aed;">
-                                ✨ Inspiration
-                            </span>
+                            <span class="tag tag-category">${insp.category || 'Uncategorized'}</span>
+                            <span class="tag tag-designer">${insp.designer || 'Unknown'}</span>
                         </div>
                     </div>
                 </div>
@@ -1763,6 +1817,9 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
                 return;
             }
 
+            const category = document.getElementById('inspirationCategory').value;
+            const designer = document.getElementById('inspirationDesigner').value;
+
             const uploadZone = document.getElementById('inspirationUploadZone');
             const uploadText = document.getElementById('inspirationUploadText');
 
@@ -1777,7 +1834,7 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
                     // Create unique filename
                     const timestamp = Date.now();
                     const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-                    const filePath = `inspirations/${timestamp}_${safeName}`;
+                    const filePath = `inspirations/${category}/${timestamp}_${safeName}`;
 
                     // Upload to storage
                     const { error: uploadError } = await supabaseClient.storage
@@ -1798,7 +1855,9 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
                         .insert({
                             file_name: file.name,
                             file_url: fileUrl,
-                            description: description
+                            description: description,
+                            category: category,
+                            designer: designer
                         });
 
                     if (dbError) throw dbError;
@@ -1831,8 +1890,12 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
                         <span class="modal-info-value">${currentInspiration.description}</span>
                     </div>
                     <div class="modal-info-row">
-                        <span class="modal-info-label">File Name</span>
-                        <span class="modal-info-value">${currentInspiration.file_name}</span>
+                        <span class="modal-info-label">Category</span>
+                        <span class="modal-info-value">${currentInspiration.category || 'Uncategorized'}</span>
+                    </div>
+                    <div class="modal-info-row">
+                        <span class="modal-info-label">Designer</span>
+                        <span class="modal-info-value">${currentInspiration.designer || 'Unknown'}</span>
                     </div>
                 `;
 
