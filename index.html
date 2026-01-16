@@ -851,7 +851,8 @@
         <div class="tabs">
             <button class="tab active" onclick="switchTab('inspiration')">Inspiration Library</button>
             <button class="tab" onclick="switchTab('designs')">Design Library</button>
-            <button class="tab" onclick="switchTab('generator')">1. Design to Product Image Mockup</button>
+            <button class="tab" onclick="switchTab('generator')">1. Design to Product Mockup</button>
+            <button class="tab" onclick="switchTab('translate')">2. Translate Design to Base</button>
         </div>
 
         <!-- Generator Tab -->
@@ -969,6 +970,17 @@
 
         <!-- Design Library Tab -->
         <div id="designs-tab" class="tab-content">
+            <!-- Instructions Box -->
+            <div style="background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; border-left: 4px solid #22c55e;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 28px;">🎨</span>
+                    <div>
+                        <div style="font-weight: 600; color: #166534; margin-bottom: 2px;">Transfer Designs to Different Notebook Colors</div>
+                        <div style="font-size: 13px; color: #15803d;">Click any design below → Select <strong>"Use in Generator"</strong> → Go to Step 2 to translate the design onto a different base notebook</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="gallery-header">
                 <h2>Design Library</h2>
                 <div class="gallery-actions">
@@ -1201,6 +1213,77 @@
             </div>
         </div>
 
+        <!-- Translate Design Tab -->
+        <div id="translate-tab" class="tab-content">
+            <div class="instructions">
+                <h3>How to use</h3>
+                <ol>
+                    <li>Select a design from the Design Library (it will appear as Image 1)</li>
+                    <li>Select the base notebook color you want to transfer the design onto (Image 2)</li>
+                    <li>Upload both images to ChatGPT/Gemini</li>
+                    <li>Copy the generated prompt and paste it</li>
+                </ol>
+            </div>
+
+            <div class="input-section">
+                <div class="input-group">
+                    <label>
+                        Image 2 — Target Base Notebook Color
+                    </label>
+                    <select id="translateNotebookColor" onchange="updateTranslateImages()">
+                        <option value="blue">Blue</option>
+                        <option value="grey">Grey</option>
+                        <option value="pink">Pink</option>
+                        <option value="purple">Purple</option>
+                    </select>
+                </div>
+            </div>
+
+            <h3 style="font-size: 14px; margin-bottom: 16px; color: #333;">Images to upload to ChatGPT/Gemini <span style="font-weight: 400; color: #999;">(you can copy & paste directly)</span></h3>
+
+            <div class="image-grid">
+                <div class="image-card">
+                    <div class="image-card-header">
+                        <h4>Image 1 — Design to Transfer</h4>
+                        <span id="translateImage1Label">Select from Design Library</span>
+                    </div>
+                    <div class="image-preview" id="translateImage1Preview" style="min-height: 200px; color: #888; font-size: 14px;">
+                        <span id="translateImage1Placeholder">Go to Design Library → Click a design → "Use in Generator"</span>
+                        <img id="translateImage1Selected" style="display: none;" alt="Design to transfer">
+                    </div>
+                </div>
+
+                <div class="image-card">
+                    <div class="image-card-header">
+                        <h4>Image 2 — Target Base Notebook</h4>
+                        <span id="translateImage2Label">blue.png</span>
+                    </div>
+                    <div class="image-preview">
+                        <img id="translateImage2Preview" src="Template Images for Product Listing/blue.png" alt="Target base notebook">
+                    </div>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <div class="output-header">
+                    <h2>Generated Prompt</h2>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 12px; color: #f59e0b; font-weight: 500;">⚠️ Ensure Image 1 is selected</span>
+                        <button class="copy-btn" onclick="copyTranslatePrompt()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            <span id="copyTranslateText">Copy Prompt</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="output-content">
+                    <div id="translatePromptOutput"></div>
+                </div>
+            </div>
+        </div>
+
         <footer>
             Product Mockup Prompt Generator
         </footer>
@@ -1221,7 +1304,9 @@
                     <!-- Info rows populated dynamically -->
                 </div>
                 <div class="modal-actions">
-                    <button class="btn btn-secondary" onclick="useDesign()">Use in Generator</button>
+                    <button class="btn" onclick="useDesign()" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
+                        🎨 Use in Step 2
+                    </button>
                     <button class="btn btn-danger" id="deleteBtn" onclick="deleteDesign()">Delete</button>
                 </div>
             </div>
@@ -1668,18 +1753,21 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
 
         function useDesign() {
             if (currentDesign) {
-                document.getElementById('imageBPlaceholder').style.display = 'none';
-                document.getElementById('imageBSelected').src = currentDesign.file_url;
-                document.getElementById('imageBSelected').style.display = 'block';
+                // Set Image 1 in translate tab
+                document.getElementById('translateImage1Placeholder').style.display = 'none';
+                document.getElementById('translateImage1Selected').src = currentDesign.file_url;
+                document.getElementById('translateImage1Selected').style.display = 'block';
+                document.getElementById('translateImage1Label').textContent = currentDesign.file_name;
 
-                // Set notebook color to first suggested color
+                // Set notebook color to first suggested color that's different from current
                 if (currentDesign.base_notebooks.length > 0) {
-                    document.getElementById('notebookColor').value = currentDesign.base_notebooks[0];
-                    updateImages();
+                    document.getElementById('translateNotebookColor').value = currentDesign.base_notebooks[0];
+                    updateTranslateImages();
                 }
 
+                generateTranslatePrompt();
                 closeModal();
-                switchTab('generator');
+                switchTab('translate');
             }
         }
 
@@ -2076,9 +2164,40 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
             }
         });
 
+        // ===== TRANSLATE TAB FUNCTIONS =====
+
+        function updateTranslateImages() {
+            const color = document.getElementById('translateNotebookColor').value;
+            document.getElementById('translateImage2Preview').src = `Template Images for Product Listing/${color}.png`;
+            document.getElementById('translateImage2Label').textContent = `${color}.png`;
+            generateTranslatePrompt();
+        }
+
+        function generateTranslatePrompt() {
+            const prompt = `Translate the design from image 1 onto image 2, ensure that the output is exactly like image 2 and the notebook size, scale, features and all must be exactly like image 2 but with the design accurately translated over. Ensure the output is a high quality 4k resolution image with absolutely no fuzziness or grain. You must only use image 1 to extract the design on the cover, nothing else. The output image must have the same base notebook dimensions as image 2, pencil holder and bookmark ribbons same as the notebook on image 2 and the output image aspect ratio must be the same as image 2.`;
+
+            document.getElementById('translatePromptOutput').textContent = prompt;
+        }
+
+        function copyTranslatePrompt() {
+            const promptText = document.getElementById('translatePromptOutput').textContent;
+            navigator.clipboard.writeText(promptText).then(() => {
+                const btn = document.querySelector('#translate-tab .copy-btn');
+                const copyText = document.getElementById('copyTranslateText');
+                btn.classList.add('copied');
+                copyText.textContent = 'Copied!';
+
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    copyText.textContent = 'Copy Prompt';
+                }, 2000);
+            });
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             generatePrompt();
+            generateTranslatePrompt();
             loadInspirations(); // Load inspirations since it's the default tab
         });
 
