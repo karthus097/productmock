@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Mockup Prompt Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -205,6 +206,7 @@
         .copy-btn, .btn {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
             background: #1a1a1a;
             color: white;
@@ -250,6 +252,11 @@
 
         .btn-danger:hover {
             background: #dc2626;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .output-content {
@@ -388,6 +395,23 @@
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .sync-status {
+            font-size: 12px;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sync-status.syncing {
+            color: #a855f7;
+        }
+
+        .sync-status.error {
+            color: #ef4444;
         }
 
         .upload-zone {
@@ -409,6 +433,11 @@
         .upload-zone.dragover {
             border-color: #a855f7;
             background: #f3e8ff;
+        }
+
+        .upload-zone.uploading {
+            pointer-events: none;
+            opacity: 0.7;
         }
 
         .upload-zone-icon {
@@ -439,6 +468,7 @@
             border-radius: 12px;
             overflow: hidden;
             transition: all 0.2s;
+            cursor: pointer;
         }
 
         .design-item:hover {
@@ -512,6 +542,26 @@
         .empty-state-hint {
             font-size: 13px;
             color: #aaa;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e5e5e5;
+            border-top-color: #a855f7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* Modal */
@@ -761,38 +811,37 @@
             <div class="gallery-header">
                 <h2>Design Library</h2>
                 <div class="gallery-actions">
-                    <button class="btn btn-secondary" onclick="exportDesigns()">
+                    <span id="syncStatus" class="sync-status">
+                        <span>☁️</span> Synced
+                    </span>
+                    <button class="btn btn-secondary" onclick="loadDesigns()">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                            <path d="M23 4v6h-6"></path>
+                            <path d="M1 20v-6h6"></path>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
                         </svg>
-                        Export
+                        Refresh
                     </button>
-                    <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                        Import
-                    </button>
-                    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importDesigns(event)">
                 </div>
             </div>
 
             <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
                 <div class="upload-zone-icon">📁</div>
-                <div class="upload-zone-text">Drop your design images here or click to upload</div>
-                <div class="upload-zone-hint">Supports PNG, JPG, WEBP</div>
+                <div class="upload-zone-text" id="uploadText">Drop your design images here or click to upload</div>
+                <div class="upload-zone-hint">Supports PNG, JPG, WEBP • Shared with all designers</div>
                 <input type="file" id="fileInput" accept="image/*" multiple style="display: none;" onchange="handleFileUpload(event)">
+            </div>
+
+            <div id="loadingState" class="loading-state" style="display: none;">
+                <div class="loading-spinner"></div>
+                <div>Loading designs...</div>
             </div>
 
             <div id="designGrid" class="design-grid">
                 <!-- Designs will be populated here -->
             </div>
 
-            <div id="emptyState" class="empty-state">
+            <div id="emptyState" class="empty-state" style="display: none;">
                 <div class="empty-state-icon">🎨</div>
                 <div class="empty-state-text">No designs uploaded yet</div>
                 <div class="empty-state-hint">Upload your first design to get started</div>
@@ -817,16 +866,24 @@
                 </div>
                 <div class="modal-actions">
                     <button class="btn btn-secondary" onclick="useDesign()">Use in Generator</button>
-                    <button class="btn btn-danger" onclick="deleteDesign()">Delete</button>
+                    <button class="btn btn-danger" id="deleteBtn" onclick="deleteDesign()">Delete</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://jyosixwjbsahcctyakdi.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_S5JGtvltlC1Q314L50QR4A_zYvzDjCR';
+        const BUCKET_NAME = 'designs';
+
+        // Initialize Supabase client
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         // Design storage
-        let designs = JSON.parse(localStorage.getItem('designs') || '[]');
-        let currentDesignId = null;
+        let designs = [];
+        let currentDesign = null;
 
         // Tab switching
         function switchTab(tab) {
@@ -837,7 +894,7 @@
             document.getElementById(`${tab}-tab`).classList.add('active');
 
             if (tab === 'designs') {
-                renderDesigns();
+                loadDesigns();
             }
         }
 
@@ -1010,31 +1067,53 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
             });
         }
 
-        // Design Library Functions
-        function handleFileUpload(event) {
-            const files = event.target.files;
-            Array.from(files).forEach(file => {
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const design = {
-                            id: Date.now() + Math.random(),
-                            name: file.name,
-                            data: e.target.result,
-                            date: new Date().toISOString()
-                        };
-                        designs.push(design);
-                        saveDesigns();
-                        renderDesigns();
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-            event.target.value = '';
+        // Supabase Design Library Functions
+        function setSyncStatus(status, message) {
+            const statusEl = document.getElementById('syncStatus');
+            statusEl.className = 'sync-status ' + status;
+            if (status === 'syncing') {
+                statusEl.innerHTML = '<span>🔄</span> ' + message;
+            } else if (status === 'error') {
+                statusEl.innerHTML = '<span>⚠️</span> ' + message;
+            } else {
+                statusEl.innerHTML = '<span>☁️</span> ' + message;
+            }
         }
 
-        function saveDesigns() {
-            localStorage.setItem('designs', JSON.stringify(designs));
+        async function loadDesigns() {
+            const grid = document.getElementById('designGrid');
+            const emptyState = document.getElementById('emptyState');
+            const loadingState = document.getElementById('loadingState');
+
+            loadingState.style.display = 'block';
+            grid.style.display = 'none';
+            emptyState.style.display = 'none';
+            setSyncStatus('syncing', 'Loading...');
+
+            try {
+                const { data, error } = await supabase.storage
+                    .from(BUCKET_NAME)
+                    .list('', {
+                        limit: 100,
+                        sortBy: { column: 'created_at', order: 'desc' }
+                    });
+
+                if (error) throw error;
+
+                designs = data.filter(file => !file.id.endsWith('/')).map(file => ({
+                    name: file.name,
+                    url: `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${file.name}`,
+                    created_at: file.created_at
+                }));
+
+                renderDesigns();
+                setSyncStatus('', 'Synced');
+            } catch (error) {
+                console.error('Error loading designs:', error);
+                setSyncStatus('error', 'Failed to load');
+            } finally {
+                loadingState.style.display = 'none';
+            }
         }
 
         function renderDesigns() {
@@ -1051,84 +1130,110 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
             emptyState.style.display = 'none';
 
             grid.innerHTML = designs.map(design => `
-                <div class="design-item" onclick="openPreview('${design.id}')">
+                <div class="design-item" onclick="openPreview('${design.name}')">
                     <div class="design-item-image">
-                        <img src="${design.data}" alt="${design.name}">
+                        <img src="${design.url}" alt="${design.name}" loading="lazy">
                     </div>
                     <div class="design-item-info">
                         <div class="design-item-name">${design.name}</div>
-                        <div class="design-item-date">${new Date(design.date).toLocaleDateString()}</div>
+                        <div class="design-item-date">${design.created_at ? new Date(design.created_at).toLocaleDateString() : 'Recently added'}</div>
                     </div>
                 </div>
             `).join('');
         }
 
-        function openPreview(id) {
-            currentDesignId = id;
-            const design = designs.find(d => d.id == id);
-            if (design) {
-                document.getElementById('modalTitle').textContent = design.name;
-                document.getElementById('modalImage').src = design.data;
+        async function handleFileUpload(event) {
+            const files = event.target.files;
+            if (!files.length) return;
+
+            const uploadZone = document.getElementById('uploadZone');
+            const uploadText = document.getElementById('uploadText');
+
+            uploadZone.classList.add('uploading');
+            uploadText.textContent = 'Uploading...';
+            setSyncStatus('syncing', 'Uploading...');
+
+            try {
+                for (const file of files) {
+                    if (!file.type.startsWith('image/')) continue;
+
+                    // Create unique filename
+                    const timestamp = Date.now();
+                    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                    const fileName = `${timestamp}_${safeName}`;
+
+                    const { error } = await supabase.storage
+                        .from(BUCKET_NAME)
+                        .upload(fileName, file, {
+                            cacheControl: '3600',
+                            upsert: false
+                        });
+
+                    if (error) throw error;
+                }
+
+                await loadDesigns();
+                setSyncStatus('', 'Synced');
+            } catch (error) {
+                console.error('Error uploading:', error);
+                setSyncStatus('error', 'Upload failed');
+                alert('Upload failed: ' + error.message);
+            } finally {
+                uploadZone.classList.remove('uploading');
+                uploadText.textContent = 'Drop your design images here or click to upload';
+                event.target.value = '';
+            }
+        }
+
+        function openPreview(name) {
+            currentDesign = designs.find(d => d.name === name);
+            if (currentDesign) {
+                document.getElementById('modalTitle').textContent = currentDesign.name;
+                document.getElementById('modalImage').src = currentDesign.url;
                 document.getElementById('previewModal').classList.add('active');
             }
         }
 
         function closeModal() {
             document.getElementById('previewModal').classList.remove('active');
-            currentDesignId = null;
+            currentDesign = null;
         }
 
         function useDesign() {
-            const design = designs.find(d => d.id == currentDesignId);
-            if (design) {
+            if (currentDesign) {
                 document.getElementById('imageBPlaceholder').style.display = 'none';
-                document.getElementById('imageBSelected').src = design.data;
+                document.getElementById('imageBSelected').src = currentDesign.url;
                 document.getElementById('imageBSelected').style.display = 'block';
                 closeModal();
                 switchTab('generator');
             }
         }
 
-        function deleteDesign() {
-            if (confirm('Are you sure you want to delete this design?')) {
-                designs = designs.filter(d => d.id != currentDesignId);
-                saveDesigns();
-                renderDesigns();
+        async function deleteDesign() {
+            if (!currentDesign) return;
+
+            if (!confirm('Are you sure you want to delete this design?')) return;
+
+            const deleteBtn = document.getElementById('deleteBtn');
+            deleteBtn.disabled = true;
+            deleteBtn.textContent = 'Deleting...';
+
+            try {
+                const { error } = await supabase.storage
+                    .from(BUCKET_NAME)
+                    .remove([currentDesign.name]);
+
+                if (error) throw error;
+
                 closeModal();
+                await loadDesigns();
+            } catch (error) {
+                console.error('Error deleting:', error);
+                alert('Delete failed: ' + error.message);
+            } finally {
+                deleteBtn.disabled = false;
+                deleteBtn.textContent = 'Delete';
             }
-        }
-
-        function exportDesigns() {
-            const dataStr = JSON.stringify(designs, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `designs-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function importDesigns(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const imported = JSON.parse(e.target.result);
-                        if (Array.isArray(imported)) {
-                            designs = [...designs, ...imported];
-                            saveDesigns();
-                            renderDesigns();
-                            alert(`Imported ${imported.length} designs!`);
-                        }
-                    } catch (err) {
-                        alert('Invalid file format');
-                    }
-                };
-                reader.readAsText(file);
-            }
-            event.target.value = '';
         }
 
         // Drag and drop
@@ -1147,7 +1252,6 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
             e.preventDefault();
             uploadZone.classList.remove('dragover');
             const files = e.dataTransfer.files;
-            document.getElementById('fileInput').files = files;
             handleFileUpload({ target: { files } });
         });
 
@@ -1161,7 +1265,6 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             generatePrompt();
-            renderDesigns();
         });
 
         document.getElementById('imageB').addEventListener('input', generatePrompt);
