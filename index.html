@@ -852,6 +852,7 @@
         <div class="tabs">
             <button class="tab active" onclick="switchTab('generator')">Prompt Generator</button>
             <button class="tab" onclick="switchTab('designs')">Design Library</button>
+            <button class="tab" onclick="switchTab('inspiration')">Inspiration Library</button>
         </div>
 
         <!-- Generator Tab -->
@@ -1084,12 +1085,59 @@
             </div>
         </div>
 
+        <!-- Inspiration Library Tab -->
+        <div id="inspiration-tab" class="tab-content">
+            <div class="gallery-header">
+                <h2>Inspiration Library</h2>
+                <div class="gallery-actions">
+                    <span id="inspirationSyncStatus" class="sync-status">
+                        <span>☁️</span> Synced
+                    </span>
+                    <button class="btn btn-secondary btn-sm" onclick="loadInspirations()">
+                        Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Upload Form -->
+            <div class="upload-form">
+                <h3>Upload Inspiration Image</h3>
+
+                <div class="form-group">
+                    <label>Description <span style="font-weight: 400; color: #999;">(This will be used in the generator)</span></label>
+                    <input type="text" id="inspirationDescription" placeholder="e.g., watercolour floral pattern, geometric abstract art, cute animal illustration">
+                </div>
+
+                <div class="upload-zone" id="inspirationUploadZone" onclick="document.getElementById('inspirationFileInput').click()">
+                    <div class="upload-zone-icon">✨</div>
+                    <div class="upload-zone-text" id="inspirationUploadText">Drop inspiration images here or click to upload</div>
+                    <div class="upload-zone-hint">Supports PNG, JPG, WEBP</div>
+                    <input type="file" id="inspirationFileInput" accept="image/*" multiple style="display: none;" onchange="handleInspirationUpload(event)">
+                </div>
+            </div>
+
+            <div id="inspirationLoadingState" class="loading-state" style="display: none;">
+                <div class="loading-spinner"></div>
+                <div>Loading inspirations...</div>
+            </div>
+
+            <div id="inspirationGrid" class="design-grid">
+                <!-- Inspirations will be populated here -->
+            </div>
+
+            <div id="inspirationEmptyState" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">✨</div>
+                <div class="empty-state-text">No inspiration images yet</div>
+                <div class="empty-state-hint">Upload images to use as design references</div>
+            </div>
+        </div>
+
         <footer>
             Product Mockup Prompt Generator
         </footer>
     </div>
 
-    <!-- Preview Modal -->
+    <!-- Design Preview Modal -->
     <div class="modal-overlay" id="previewModal">
         <div class="modal">
             <div class="modal-header">
@@ -1111,6 +1159,30 @@
         </div>
     </div>
 
+    <!-- Inspiration Preview Modal -->
+    <div class="modal-overlay" id="inspirationModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="inspirationModalTitle">Inspiration Preview</h3>
+                <button class="modal-close" onclick="closeInspirationModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-preview">
+                    <img id="inspirationModalImage" src="" alt="Inspiration preview">
+                </div>
+                <div class="modal-info" id="inspirationModalInfo">
+                    <!-- Info rows populated dynamically -->
+                </div>
+                <div class="modal-actions">
+                    <button class="btn" onclick="useInspiration()" style="background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);">
+                        ✨ Use in Generator
+                    </button>
+                    <button class="btn btn-danger" id="deleteInspirationBtn" onclick="deleteInspiration()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Supabase Configuration
         const SUPABASE_URL = 'https://jyosixwjbsahcctyakdi.supabase.co';
@@ -1124,6 +1196,10 @@
         let designs = [];
         let currentDesign = null;
 
+        // Inspiration storage
+        let inspirations = [];
+        let currentInspiration = null;
+
         // Tab switching
         function switchTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -1134,6 +1210,8 @@
 
             if (tab === 'designs') {
                 loadDesigns();
+            } else if (tab === 'inspiration') {
+                loadInspirations();
             }
         }
 
@@ -1576,7 +1654,7 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
             }
         }
 
-        // Drag and drop
+        // Drag and drop for designs
         const uploadZone = document.getElementById('uploadZone');
 
         uploadZone.addEventListener('dragover', (e) => {
@@ -1599,6 +1677,255 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
         document.getElementById('previewModal').addEventListener('click', (e) => {
             if (e.target.id === 'previewModal') {
                 closeModal();
+            }
+        });
+
+        // ===== INSPIRATION LIBRARY FUNCTIONS =====
+
+        function setInspirationSyncStatus(status, message) {
+            const statusEl = document.getElementById('inspirationSyncStatus');
+            statusEl.className = 'sync-status ' + status;
+            if (status === 'syncing') {
+                statusEl.innerHTML = '<span>🔄</span> ' + message;
+            } else if (status === 'error') {
+                statusEl.innerHTML = '<span>⚠️</span> ' + message;
+            } else {
+                statusEl.innerHTML = '<span>☁️</span> ' + message;
+            }
+        }
+
+        async function loadInspirations() {
+            const grid = document.getElementById('inspirationGrid');
+            const emptyState = document.getElementById('inspirationEmptyState');
+            const loadingState = document.getElementById('inspirationLoadingState');
+
+            loadingState.style.display = 'block';
+            grid.style.display = 'none';
+            emptyState.style.display = 'none';
+            setInspirationSyncStatus('syncing', 'Loading...');
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('inspirations')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                inspirations = data || [];
+                renderInspirations();
+                setInspirationSyncStatus('', 'Synced');
+            } catch (error) {
+                console.error('Error loading inspirations:', error);
+                setInspirationSyncStatus('error', 'Failed to load');
+            } finally {
+                loadingState.style.display = 'none';
+            }
+        }
+
+        function renderInspirations() {
+            const grid = document.getElementById('inspirationGrid');
+            const emptyState = document.getElementById('inspirationEmptyState');
+
+            if (inspirations.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            emptyState.style.display = 'none';
+
+            grid.innerHTML = inspirations.map(insp => `
+                <div class="design-item" onclick="openInspirationPreview('${insp.id}')">
+                    <div class="design-item-image">
+                        <img src="${insp.file_url}" alt="${insp.file_name}" loading="lazy">
+                    </div>
+                    <div class="design-item-info">
+                        <div class="design-item-name">${insp.description || insp.file_name}</div>
+                        <div class="design-item-tags">
+                            <span class="tag" style="background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); color: #7c3aed;">
+                                ✨ Inspiration
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function handleInspirationUpload(event) {
+            const files = event.target.files;
+            if (!files.length) return;
+
+            const description = document.getElementById('inspirationDescription').value.trim();
+            if (!description) {
+                alert('Please enter a description for the inspiration image');
+                return;
+            }
+
+            const uploadZone = document.getElementById('inspirationUploadZone');
+            const uploadText = document.getElementById('inspirationUploadText');
+
+            uploadZone.classList.add('uploading');
+            uploadText.textContent = 'Uploading...';
+            setInspirationSyncStatus('syncing', 'Uploading...');
+
+            try {
+                for (const file of files) {
+                    if (!file.type.startsWith('image/')) continue;
+
+                    // Create unique filename
+                    const timestamp = Date.now();
+                    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                    const filePath = `inspirations/${timestamp}_${safeName}`;
+
+                    // Upload to storage
+                    const { error: uploadError } = await supabaseClient.storage
+                        .from(BUCKET_NAME)
+                        .upload(filePath, file, {
+                            cacheControl: '3600',
+                            upsert: false
+                        });
+
+                    if (uploadError) throw uploadError;
+
+                    // Get public URL
+                    const fileUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${filePath}`;
+
+                    // Insert into database
+                    const { error: dbError } = await supabaseClient
+                        .from('inspirations')
+                        .insert({
+                            file_name: file.name,
+                            file_url: fileUrl,
+                            description: description
+                        });
+
+                    if (dbError) throw dbError;
+                }
+
+                await loadInspirations();
+                setInspirationSyncStatus('', 'Synced');
+                document.getElementById('inspirationDescription').value = '';
+
+            } catch (error) {
+                console.error('Error uploading:', error);
+                setInspirationSyncStatus('error', 'Upload failed');
+                alert('Upload failed: ' + error.message);
+            } finally {
+                uploadZone.classList.remove('uploading');
+                uploadText.textContent = 'Drop inspiration images here or click to upload';
+                event.target.value = '';
+            }
+        }
+
+        function openInspirationPreview(id) {
+            currentInspiration = inspirations.find(i => i.id === id);
+            if (currentInspiration) {
+                document.getElementById('inspirationModalTitle').textContent = currentInspiration.file_name;
+                document.getElementById('inspirationModalImage').src = currentInspiration.file_url;
+
+                document.getElementById('inspirationModalInfo').innerHTML = `
+                    <div class="modal-info-row">
+                        <span class="modal-info-label">Description</span>
+                        <span class="modal-info-value">${currentInspiration.description}</span>
+                    </div>
+                    <div class="modal-info-row">
+                        <span class="modal-info-label">File Name</span>
+                        <span class="modal-info-value">${currentInspiration.file_name}</span>
+                    </div>
+                `;
+
+                document.getElementById('inspirationModal').classList.add('active');
+            }
+        }
+
+        function closeInspirationModal() {
+            document.getElementById('inspirationModal').classList.remove('active');
+            currentInspiration = null;
+        }
+
+        function useInspiration() {
+            if (currentInspiration) {
+                // Set the description in the generator
+                document.getElementById('imageB').value = currentInspiration.description;
+
+                // Set the image preview
+                document.getElementById('imageBPlaceholder').style.display = 'none';
+                document.getElementById('imageBSelected').src = currentInspiration.file_url;
+                document.getElementById('imageBSelected').style.display = 'block';
+
+                // Regenerate the prompt
+                generatePrompt();
+
+                closeInspirationModal();
+                switchTab('generator');
+            }
+        }
+
+        async function deleteInspiration() {
+            if (!currentInspiration) return;
+
+            if (!confirm('Are you sure you want to delete this inspiration?')) return;
+
+            const deleteBtn = document.getElementById('deleteInspirationBtn');
+            deleteBtn.disabled = true;
+            deleteBtn.textContent = 'Deleting...';
+
+            try {
+                // Extract file path from URL
+                const urlParts = currentInspiration.file_url.split(`${BUCKET_NAME}/`);
+                const filePath = urlParts[1];
+
+                // Delete from storage
+                const { error: storageError } = await supabaseClient.storage
+                    .from(BUCKET_NAME)
+                    .remove([filePath]);
+
+                if (storageError) console.warn('Storage delete error:', storageError);
+
+                // Delete from database
+                const { error: dbError } = await supabaseClient
+                    .from('inspirations')
+                    .delete()
+                    .eq('id', currentInspiration.id);
+
+                if (dbError) throw dbError;
+
+                closeInspirationModal();
+                await loadInspirations();
+            } catch (error) {
+                console.error('Error deleting:', error);
+                alert('Delete failed: ' + error.message);
+            } finally {
+                deleteBtn.disabled = false;
+                deleteBtn.textContent = 'Delete';
+            }
+        }
+
+        // Drag and drop for inspirations
+        const inspirationUploadZone = document.getElementById('inspirationUploadZone');
+
+        inspirationUploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            inspirationUploadZone.classList.add('dragover');
+        });
+
+        inspirationUploadZone.addEventListener('dragleave', () => {
+            inspirationUploadZone.classList.remove('dragover');
+        });
+
+        inspirationUploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            inspirationUploadZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            handleInspirationUpload({ target: { files } });
+        });
+
+        // Close inspiration modal on overlay click
+        document.getElementById('inspirationModal').addEventListener('click', (e) => {
+            if (e.target.id === 'inspirationModal') {
+                closeInspirationModal();
             }
         });
 
