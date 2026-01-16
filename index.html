@@ -1985,11 +1985,16 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
             handleInspirationUpload({ target: { files } });
         });
 
-        // Paste support for inspirations (works when on inspiration tab)
-        document.addEventListener('paste', (e) => {
+        // Paste support for inspirations (works anywhere when on inspiration tab)
+        document.addEventListener('paste', async (e) => {
             // Only handle paste when on inspiration tab
             const inspirationTab = document.getElementById('inspiration-tab');
             if (!inspirationTab.classList.contains('active')) return;
+
+            // Don't intercept if user is typing in a text input (except our description field)
+            const activeEl = document.activeElement;
+            if (activeEl.tagName === 'INPUT' && activeEl.id !== 'inspirationDescription') return;
+            if (activeEl.tagName === 'TEXTAREA') return;
 
             const items = e.clipboardData?.items;
             if (!items) return;
@@ -2010,9 +2015,28 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
 
             if (imageFiles.length > 0) {
                 e.preventDefault();
+
+                // Check if description is filled
+                const description = document.getElementById('inspirationDescription').value.trim();
+                if (!description) {
+                    // Flash the description field to show it needs to be filled
+                    const descInput = document.getElementById('inspirationDescription');
+                    descInput.style.borderColor = '#ef4444';
+                    descInput.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.2)';
+                    descInput.focus();
+                    descInput.placeholder = '⚠️ Please enter a description first, then paste again';
+                    setTimeout(() => {
+                        descInput.style.borderColor = '';
+                        descInput.style.boxShadow = '';
+                        descInput.placeholder = 'e.g., watercolour floral pattern, geometric abstract art, cute animal illustration';
+                    }, 3000);
+                    return;
+                }
+
                 // Flash the upload zone to show paste was detected
+                const uploadText = document.getElementById('inspirationUploadText');
                 inspirationUploadZone.classList.add('dragover');
-                setTimeout(() => inspirationUploadZone.classList.remove('dragover'), 300);
+                uploadText.textContent = '📋 Image pasted! Uploading...';
 
                 handleInspirationUpload({ target: { files: imageFiles } });
             }
