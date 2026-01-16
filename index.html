@@ -1228,6 +1228,18 @@
             <div class="input-section">
                 <div class="input-group">
                     <label>
+                        Image 1 — Describe the Design Notebook
+                    </label>
+                    <input
+                        type="text"
+                        id="translateImage1Desc"
+                        placeholder="e.g., purple notebook with all over cat design"
+                        oninput="generateTranslatePrompt()"
+                    >
+                </div>
+
+                <div class="input-group">
+                    <label>
                         Image 2 — Target Base Notebook Color
                     </label>
                     <select id="translateNotebookColor" onchange="updateTranslateImages()">
@@ -1236,6 +1248,18 @@
                         <option value="pink">Pink</option>
                         <option value="purple">Purple</option>
                     </select>
+                </div>
+
+                <div class="input-group">
+                    <label>
+                        Image 2 — Description <span class="label-hint">(auto-filled based on color)</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="translateImage2Desc"
+                        value="plain blue official product image notebook"
+                        oninput="generateTranslatePrompt()"
+                    >
                 </div>
             </div>
 
@@ -1268,7 +1292,7 @@
                 <div class="output-header">
                     <h2>Generated Prompt</h2>
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <span style="font-size: 12px; color: #f59e0b; font-weight: 500;">⚠️ Ensure Image 1 is selected</span>
+                        <span style="font-size: 12px; color: #f59e0b; font-weight: 500;">⚠️ Check Image 1 description is filled</span>
                         <button class="copy-btn" onclick="copyTranslatePrompt()">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -2166,15 +2190,31 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
 
         // ===== TRANSLATE TAB FUNCTIONS =====
 
+        const translateColorDescriptions = {
+            blue: 'plain blue official product image notebook',
+            grey: 'plain grey official product image notebook',
+            pink: 'plain pink official product image notebook',
+            purple: 'plain purple official product image notebook'
+        };
+
         function updateTranslateImages() {
             const color = document.getElementById('translateNotebookColor').value;
             document.getElementById('translateImage2Preview').src = `Template Images for Product Listing/${color}.png`;
             document.getElementById('translateImage2Label').textContent = `${color}.png`;
+            document.getElementById('translateImage2Desc').value = translateColorDescriptions[color];
             generateTranslatePrompt();
         }
 
         function generateTranslatePrompt() {
-            const prompt = `Translate the design from image 1 onto image 2, ensure that the output is exactly like image 2 and the notebook size, scale, features and all must be exactly like image 2 but with the design accurately translated over. Ensure the output is a high quality 4k resolution image with absolutely no fuzziness or grain. You must only use image 1 to extract the design on the cover, nothing else. The output image must have the same base notebook dimensions as image 2, pencil holder and bookmark ribbons same as the notebook on image 2 and the output image aspect ratio must be the same as image 2.`;
+            const image1Desc = document.getElementById('translateImage1Desc').value || '[Describe Image 1]';
+            const image2Desc = document.getElementById('translateImage2Desc').value || '[Describe Image 2]';
+
+            const prompt = `Image 1 is a -
+${image1Desc}
+
+Image 2 is a ${image2Desc}
+
+Translate the design from image 1 onto image 2, ensure that the output is exactly like image 2 and the notebook size, scale, features and all must be exactly like image 2 but with the design accurately translated over. Ensure the output is a high quality 4k resolution image with absolutely no fuzzyness or grain. You must only use image 1 to extract the design on the cover, nothing else. The output image must have the same base notebook dimensions as image 2, pencil holder and bookmark ribbons same as the notebook on image 2 and the output image aspect ratio must be the same as image 2.`;
 
             document.getElementById('translatePromptOutput').textContent = prompt;
         }
