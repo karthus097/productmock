@@ -259,6 +259,11 @@
             cursor: not-allowed;
         }
 
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
         .output-content {
             padding: 20px;
             max-height: 400px;
@@ -280,16 +285,6 @@
             text-align: center;
             color: #888;
             font-size: 13px;
-        }
-
-        .color-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 8px;
-            vertical-align: middle;
-            border: 1px solid rgba(0,0,0,0.1);
         }
 
         .input-with-hint {
@@ -414,6 +409,92 @@
             color: #ef4444;
         }
 
+        /* Upload Form */
+        .upload-form {
+            background: white;
+            border: 2px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .upload-form h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 0;
+        }
+
+        .form-group select, .form-group input {
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: #f5f5f5;
+            border: 2px solid #e5e5e5;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .checkbox-label:hover {
+            border-color: #ccc;
+        }
+
+        .checkbox-label.checked {
+            background: #f3e8ff;
+            border-color: #a855f7;
+            color: #6b21a8;
+        }
+
+        .checkbox-label input {
+            display: none;
+        }
+
+        .color-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid rgba(0,0,0,0.1);
+        }
+
+        .color-dot.blue { background: #3b82f6; }
+        .color-dot.pink { background: #ec4899; }
+        .color-dot.purple { background: #8b5cf6; }
+        .color-dot.grey { background: #6b7280; }
+
         .upload-zone {
             border: 2px dashed #d1d5db;
             border-radius: 12px;
@@ -422,7 +503,7 @@
             cursor: pointer;
             transition: all 0.2s;
             background: #fafafa;
-            margin-bottom: 24px;
+            margin-top: 16px;
         }
 
         .upload-zone:hover {
@@ -456,9 +537,39 @@
             color: #999;
         }
 
+        /* Filters */
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 0;
+        }
+
+        .filter-group select {
+            padding: 8px 32px 8px 12px;
+            font-size: 13px;
+            border-radius: 8px;
+        }
+
         .design-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 16px;
         }
 
@@ -499,27 +610,46 @@
             font-size: 13px;
             font-weight: 500;
             color: #333;
-            margin-bottom: 4px;
+            margin-bottom: 8px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .design-item-date {
-            font-size: 11px;
-            color: #999;
-        }
-
-        .design-item-actions {
+        .design-item-tags {
             display: flex;
-            gap: 8px;
-            padding: 0 12px 12px;
+            flex-wrap: wrap;
+            gap: 4px;
         }
 
-        .design-item-actions button {
-            flex: 1;
-            padding: 8px;
-            font-size: 12px;
+        .tag {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .tag-category {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .tag-designer {
+            background: #fce7f3;
+            color: #be185d;
+        }
+
+        .tag-notebook {
+            background: #f3f4f6;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .tag-notebook .color-dot {
+            width: 8px;
+            height: 8px;
         }
 
         .empty-state {
@@ -636,6 +766,26 @@
             object-fit: contain;
         }
 
+        .modal-info {
+            margin-bottom: 16px;
+        }
+
+        .modal-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+
+        .modal-info-label {
+            color: #888;
+        }
+
+        .modal-info-value {
+            font-weight: 500;
+        }
+
         .modal-actions {
             display: flex;
             gap: 8px;
@@ -679,6 +829,14 @@
 
             .gallery-actions button {
                 flex: 1;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                flex-direction: column;
             }
         }
     </style>
@@ -814,22 +972,100 @@
                     <span id="syncStatus" class="sync-status">
                         <span>☁️</span> Synced
                     </span>
-                    <button class="btn btn-secondary" onclick="loadDesigns()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-                            <path d="M23 4v6h-6"></path>
-                            <path d="M1 20v-6h6"></path>
-                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                        </svg>
+                    <button class="btn btn-secondary btn-sm" onclick="loadDesigns()">
                         Refresh
                     </button>
                 </div>
             </div>
 
-            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-                <div class="upload-zone-icon">📁</div>
-                <div class="upload-zone-text" id="uploadText">Drop your design images here or click to upload</div>
-                <div class="upload-zone-hint">Supports PNG, JPG, WEBP • Shared with all designers</div>
-                <input type="file" id="fileInput" accept="image/*" multiple style="display: none;" onchange="handleFileUpload(event)">
+            <!-- Upload Form -->
+            <div class="upload-form">
+                <h3>Upload New Design</h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="uploadCategory">
+                            <option value="Animal">Animal</option>
+                            <option value="Floral">Floral</option>
+                            <option value="Pastel">Pastel</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Designer</label>
+                        <select id="uploadDesigner">
+                            <option value="Helen">Helen</option>
+                            <option value="David">David</option>
+                            <option value="Feb">Feb</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Base Notebook Suggestions (select at least one)</label>
+                    <div class="checkbox-group" id="notebookCheckboxes">
+                        <label class="checkbox-label" onclick="toggleCheckbox(this)">
+                            <input type="checkbox" value="blue">
+                            <span class="color-dot blue"></span>
+                            Blue
+                        </label>
+                        <label class="checkbox-label" onclick="toggleCheckbox(this)">
+                            <input type="checkbox" value="pink">
+                            <span class="color-dot pink"></span>
+                            Pink
+                        </label>
+                        <label class="checkbox-label" onclick="toggleCheckbox(this)">
+                            <input type="checkbox" value="purple">
+                            <span class="color-dot purple"></span>
+                            Purple
+                        </label>
+                        <label class="checkbox-label" onclick="toggleCheckbox(this)">
+                            <input type="checkbox" value="grey">
+                            <span class="color-dot grey"></span>
+                            Grey
+                        </label>
+                    </div>
+                </div>
+
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-zone-icon">📁</div>
+                    <div class="upload-zone-text" id="uploadText">Drop your design images here or click to upload</div>
+                    <div class="upload-zone-hint">Supports PNG, JPG, WEBP</div>
+                    <input type="file" id="fileInput" accept="image/*" multiple style="display: none;" onchange="handleFileUpload(event)">
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Category:</label>
+                    <select id="filterCategory" onchange="loadDesigns()">
+                        <option value="">All</option>
+                        <option value="Animal">Animal</option>
+                        <option value="Floral">Floral</option>
+                        <option value="Pastel">Pastel</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Designer:</label>
+                    <select id="filterDesigner" onchange="loadDesigns()">
+                        <option value="">All</option>
+                        <option value="Helen">Helen</option>
+                        <option value="David">David</option>
+                        <option value="Feb">Feb</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Notebook:</label>
+                    <select id="filterNotebook" onchange="loadDesigns()">
+                        <option value="">All</option>
+                        <option value="blue">Blue</option>
+                        <option value="pink">Pink</option>
+                        <option value="purple">Purple</option>
+                        <option value="grey">Grey</option>
+                    </select>
+                </div>
             </div>
 
             <div id="loadingState" class="loading-state" style="display: none;">
@@ -843,8 +1079,8 @@
 
             <div id="emptyState" class="empty-state" style="display: none;">
                 <div class="empty-state-icon">🎨</div>
-                <div class="empty-state-text">No designs uploaded yet</div>
-                <div class="empty-state-hint">Upload your first design to get started</div>
+                <div class="empty-state-text">No designs found</div>
+                <div class="empty-state-hint">Upload your first design or adjust filters</div>
             </div>
         </div>
 
@@ -863,6 +1099,9 @@
             <div class="modal-body">
                 <div class="modal-preview">
                     <img id="modalImage" src="" alt="Design preview">
+                </div>
+                <div class="modal-info" id="modalInfo">
+                    <!-- Info rows populated dynamically -->
                 </div>
                 <div class="modal-actions">
                     <button class="btn btn-secondary" onclick="useDesign()">Use in Generator</button>
@@ -896,6 +1135,18 @@
             if (tab === 'designs') {
                 loadDesigns();
             }
+        }
+
+        // Checkbox toggle
+        function toggleCheckbox(label) {
+            const checkbox = label.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            label.classList.toggle('checked', checkbox.checked);
+        }
+
+        function getSelectedNotebooks() {
+            const checkboxes = document.querySelectorAll('#notebookCheckboxes input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
         }
 
         // Color descriptions
@@ -1091,21 +1342,31 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
             setSyncStatus('syncing', 'Loading...');
 
             try {
-                const { data, error } = await supabaseClient.storage
-                    .from(BUCKET_NAME)
-                    .list('', {
-                        limit: 100,
-                        sortBy: { column: 'created_at', order: 'desc' }
-                    });
+                // Build query with filters
+                let query = supabaseClient
+                    .from('designs')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                const filterCategory = document.getElementById('filterCategory').value;
+                const filterDesigner = document.getElementById('filterDesigner').value;
+                const filterNotebook = document.getElementById('filterNotebook').value;
+
+                if (filterCategory) {
+                    query = query.eq('category', filterCategory);
+                }
+                if (filterDesigner) {
+                    query = query.eq('designer', filterDesigner);
+                }
+                if (filterNotebook) {
+                    query = query.contains('base_notebooks', [filterNotebook]);
+                }
+
+                const { data, error } = await query;
 
                 if (error) throw error;
 
-                designs = data.filter(file => !file.id.endsWith('/')).map(file => ({
-                    name: file.name,
-                    url: `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${file.name}`,
-                    created_at: file.created_at
-                }));
-
+                designs = data || [];
                 renderDesigns();
                 setSyncStatus('', 'Synced');
             } catch (error) {
@@ -1130,13 +1391,21 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
             emptyState.style.display = 'none';
 
             grid.innerHTML = designs.map(design => `
-                <div class="design-item" onclick="openPreview('${design.name}')">
+                <div class="design-item" onclick="openPreview('${design.id}')">
                     <div class="design-item-image">
-                        <img src="${design.url}" alt="${design.name}" loading="lazy">
+                        <img src="${design.file_url}" alt="${design.file_name}" loading="lazy">
                     </div>
                     <div class="design-item-info">
-                        <div class="design-item-name">${design.name}</div>
-                        <div class="design-item-date">${design.created_at ? new Date(design.created_at).toLocaleDateString() : 'Recently added'}</div>
+                        <div class="design-item-name">${design.file_name}</div>
+                        <div class="design-item-tags">
+                            <span class="tag tag-category">${design.category}</span>
+                            <span class="tag tag-designer">${design.designer}</span>
+                            ${design.base_notebooks.map(nb => `
+                                <span class="tag tag-notebook">
+                                    <span class="color-dot ${nb}"></span>
+                                </span>
+                            `).join('')}
+                        </div>
                     </div>
                 </div>
             `).join('');
@@ -1145,6 +1414,16 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
         async function handleFileUpload(event) {
             const files = event.target.files;
             if (!files.length) return;
+
+            // Validate notebook selection
+            const selectedNotebooks = getSelectedNotebooks();
+            if (selectedNotebooks.length === 0) {
+                alert('Please select at least one base notebook color');
+                return;
+            }
+
+            const category = document.getElementById('uploadCategory').value;
+            const designer = document.getElementById('uploadDesigner').value;
 
             const uploadZone = document.getElementById('uploadZone');
             const uploadText = document.getElementById('uploadText');
@@ -1160,20 +1439,44 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
                     // Create unique filename
                     const timestamp = Date.now();
                     const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-                    const fileName = `${timestamp}_${safeName}`;
+                    const filePath = `${category}/${timestamp}_${safeName}`;
 
-                    const { error } = await supabaseClient.storage
+                    // Upload to storage
+                    const { error: uploadError } = await supabaseClient.storage
                         .from(BUCKET_NAME)
-                        .upload(fileName, file, {
+                        .upload(filePath, file, {
                             cacheControl: '3600',
                             upsert: false
                         });
 
-                    if (error) throw error;
+                    if (uploadError) throw uploadError;
+
+                    // Get public URL
+                    const fileUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${filePath}`;
+
+                    // Insert into database
+                    const { error: dbError } = await supabaseClient
+                        .from('designs')
+                        .insert({
+                            file_name: file.name,
+                            file_url: fileUrl,
+                            category: category,
+                            designer: designer,
+                            base_notebooks: selectedNotebooks
+                        });
+
+                    if (dbError) throw dbError;
                 }
 
                 await loadDesigns();
                 setSyncStatus('', 'Synced');
+
+                // Reset checkboxes
+                document.querySelectorAll('#notebookCheckboxes .checkbox-label').forEach(label => {
+                    label.classList.remove('checked');
+                    label.querySelector('input').checked = false;
+                });
+
             } catch (error) {
                 console.error('Error uploading:', error);
                 setSyncStatus('error', 'Upload failed');
@@ -1185,11 +1488,28 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
             }
         }
 
-        function openPreview(name) {
-            currentDesign = designs.find(d => d.name === name);
+        function openPreview(id) {
+            currentDesign = designs.find(d => d.id === id);
             if (currentDesign) {
-                document.getElementById('modalTitle').textContent = currentDesign.name;
-                document.getElementById('modalImage').src = currentDesign.url;
+                document.getElementById('modalTitle').textContent = currentDesign.file_name;
+                document.getElementById('modalImage').src = currentDesign.file_url;
+
+                // Populate info
+                document.getElementById('modalInfo').innerHTML = `
+                    <div class="modal-info-row">
+                        <span class="modal-info-label">Category</span>
+                        <span class="modal-info-value">${currentDesign.category}</span>
+                    </div>
+                    <div class="modal-info-row">
+                        <span class="modal-info-label">Designer</span>
+                        <span class="modal-info-value">${currentDesign.designer}</span>
+                    </div>
+                    <div class="modal-info-row">
+                        <span class="modal-info-label">Base Notebooks</span>
+                        <span class="modal-info-value">${currentDesign.base_notebooks.map(n => n.charAt(0).toUpperCase() + n.slice(1)).join(', ')}</span>
+                    </div>
+                `;
+
                 document.getElementById('previewModal').classList.add('active');
             }
         }
@@ -1202,8 +1522,15 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
         function useDesign() {
             if (currentDesign) {
                 document.getElementById('imageBPlaceholder').style.display = 'none';
-                document.getElementById('imageBSelected').src = currentDesign.url;
+                document.getElementById('imageBSelected').src = currentDesign.file_url;
                 document.getElementById('imageBSelected').style.display = 'block';
+
+                // Set notebook color to first suggested color
+                if (currentDesign.base_notebooks.length > 0) {
+                    document.getElementById('notebookColor').value = currentDesign.base_notebooks[0];
+                    updateImages();
+                }
+
                 closeModal();
                 switchTab('generator');
             }
@@ -1219,11 +1546,24 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
             deleteBtn.textContent = 'Deleting...';
 
             try {
-                const { error } = await supabaseClient.storage
-                    .from(BUCKET_NAME)
-                    .remove([currentDesign.name]);
+                // Extract file path from URL
+                const urlParts = currentDesign.file_url.split(`${BUCKET_NAME}/`);
+                const filePath = urlParts[1];
 
-                if (error) throw error;
+                // Delete from storage
+                const { error: storageError } = await supabaseClient.storage
+                    .from(BUCKET_NAME)
+                    .remove([filePath]);
+
+                if (storageError) console.warn('Storage delete error:', storageError);
+
+                // Delete from database
+                const { error: dbError } = await supabaseClient
+                    .from('designs')
+                    .delete()
+                    .eq('id', currentDesign.id);
+
+                if (dbError) throw dbError;
 
                 closeModal();
                 await loadDesigns();
