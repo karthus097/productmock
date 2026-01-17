@@ -393,92 +393,128 @@ async function runStep1Automation(options) {
             console.log('   After logging in, the automation will continue automatically.\n');
 
             // Wait for the chat interface to appear (indicates successful login)
-            await page.waitForSelector('[data-testid="send-button"], button[data-testid="send-button"], form textarea', {
+            await page.waitForSelector('[data-testid="send-button"], button[data-testid="send-button"], form textarea, #prompt-textarea', {
                 timeout: 300000 // 5 minutes to log in
             });
             console.log('✅ Login detected, continuing...\n');
         }
 
-        // Wait for chat interface
+        // Wait for chat interface to fully load
         console.log('⏳ Waiting for chat interface...');
-        await page.waitForSelector('textarea, [contenteditable="true"]', { timeout: 30000 });
+
+        // Give the page more time to stabilize
+        await page.waitForTimeout(3000);
+
+        // Try to dismiss any popups or overlays by clicking outside
+        try {
+            await page.click('body', { position: { x: 10, y: 10 } });
+            await page.waitForTimeout(500);
+        } catch (e) {
+            // Ignore click errors
+        }
+
+        // Try to close any "What's new" or onboarding modals
+        try {
+            const closeButtons = await page.$$('button[aria-label="Close"], [data-testid="close-button"], button:has-text("Close"), button:has-text("Got it"), button:has-text("Dismiss")');
+            for (const btn of closeButtons) {
+                await btn.click().catch(() => {});
+                await page.waitForTimeout(300);
+            }
+        } catch (e) {
+            // Ignore
+        }
+
         await page.waitForTimeout(1000);
 
-        // Find the message input area
-        const inputSelectors = [
-            '#prompt-textarea',
-            'textarea[data-id="root"]',
-            'div[contenteditable="true"]',
-            'textarea'
-        ];
+        // Find the message input area with multiple strategies
+        console.log('🔍 Looking for input area...');
 
-        let inputArea = null;
-        for (const selector of inputSelectors) {
-            inputArea = await page.$(selector);
-            if (inputArea) break;
-        }
+        // Use Playwright's locator API for better reliability
+        const inputLocator = page.locator('#prompt-textarea, textarea[placeholder*="Ask"], textarea[placeholder*="Message"], div[contenteditable="true"]').first();
 
-        if (!inputArea) {
-            throw new Error('Could not find message input area');
-        }
+        // Wait for it to be available
+        await inputLocator.waitFor({ state: 'attached', timeout: 10000 });
+        console.log('   ✅ Found input area');
 
         // Upload images first (using the attachment button)
         console.log('📎 Uploading images...');
 
-        // Find the file input or attachment button
-        const fileInput = await page.$('input[type="file"]');
+        // Prepare images to upload
+        const imagesToUpload = [imageAPath, imageCPath];
+        if (imageBPath) {
+            imagesToUpload.splice(1, 0, imageBPath); // Insert design image as Image B
+        }
+
+        console.log(`   📷 Image A (Base): ${path.basename(imageAPath)}`);
+        if (imageBPath) {
+            console.log(`   🎨 Image B (Design): ${path.basename(imageBPath)}`);
+        } else {
+            console.log(`   🎨 Image B (Design): [No image - using description only]`);
+        }
+        console.log(`   📐 Image C (Reference): ${path.basename(imageCPath)}`);
+
+        // Find file input - it might be hidden, so we look for any input[type="file"]
+        let fileInput = await page.$('input[type="file"]');
+
+        if (!fileInput) {
+            // Try clicking the attachment/plus button to reveal file input
+            const attachButton = await page.$('button[aria-label*="Attach"], button[aria-label*="Upload"], button:has-text("+")');
+            if (attachButton) {
+                await attachButton.click();
+                await page.waitForTimeout(500);
+                fileInput = await page.$('input[type="file"]');
+            }
+        }
 
         if (fileInput) {
-            // Prepare images to upload
-            const imagesToUpload = [imageAPath, imageCPath];
-            if (imageBPath) {
-                imagesToUpload.splice(1, 0, imageBPath); // Insert design image as Image B
-            }
-
-            console.log(`   📷 Image A (Base): ${path.basename(imageAPath)}`);
-            if (imageBPath) {
-                console.log(`   🎨 Image B (Design): ${path.basename(imageBPath)}`);
-            } else {
-                console.log(`   🎨 Image B (Design): [No image - using description only]`);
-            }
-            console.log(`   📐 Image C (Reference): ${path.basename(imageCPath)}`);
-
             // Upload all images
             await fileInput.setInputFiles(imagesToUpload);
 
             // Wait for uploads to process
-            await page.waitForTimeout(3000);
+            await page.waitForTimeout(4000);
             console.log('✅ Images uploaded');
         } else {
-            console.log('⚠️  Could not find file upload input, proceeding with text only');
+            console.log('⚠️  Could not find file upload input');
+            console.log('   You may need to manually upload images after the prompt is entered');
         }
 
         // Type the prompt
         console.log('✍️  Entering prompt...');
-        await inputArea.click();
+
+        // Click on the input area to focus it
+        await inputLocator.click();
         await page.waitForTimeout(500);
 
-        // Use clipboard to paste the prompt (faster and more reliable)
-        await page.evaluate((text) => {
-            navigator.clipboard.writeText(text);
-        }, prompt);
+        // Try multiple methods to enter text
+        try {
+            // Method 1: Use fill() - most reliable for textareas
+            await inputLocator.fill(prompt);
+        } catch (e) {
+            console.log('   Trying alternative input method...');
+            // Method 2: Use clipboard
+            await page.evaluate((text) => {
+                navigator.clipboard.writeText(text);
+            }, prompt);
+            await page.keyboard.press('Control+v');
+        }
 
-        await page.keyboard.press('Control+v');
         await page.waitForTimeout(1000);
 
         // Send the message
         console.log('📤 Sending message...');
 
-        // Try different methods to send
-        const sendButton = await page.$('button[data-testid="send-button"]')
-            || await page.$('button:has-text("Send")')
-            || await page.$('button[aria-label*="Send"]');
+        // Look for the send button with various selectors
+        const sendButtonLocator = page.locator('button[data-testid="send-button"], button[aria-label*="Send"], button:has-text("Send")').first();
 
-        if (sendButton) {
-            await sendButton.click();
-        } else {
-            // Try pressing Enter
+        try {
+            await sendButtonLocator.click({ timeout: 5000 });
+        } catch (e) {
+            // Fallback: press Enter or Ctrl+Enter
+            console.log('   Send button not found, trying Enter key...');
             await page.keyboard.press('Enter');
+            await page.waitForTimeout(500);
+            // Some UIs need Ctrl+Enter
+            await page.keyboard.press('Control+Enter');
         }
 
         console.log('\n⏳ Waiting for ChatGPT to generate image...');
