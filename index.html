@@ -849,11 +849,111 @@
         </header>
 
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('inspiration')">Inspiration Library</button>
+            <button class="tab active" onclick="switchTab('agent')">🤖 Agent Instructions</button>
+            <button class="tab" onclick="switchTab('inspiration')">Inspiration Library</button>
             <button class="tab" onclick="switchTab('designs')">Design Library</button>
             <button class="tab" onclick="switchTab('generator')">1. Design to Product Mockup</button>
             <button class="tab" onclick="switchTab('translate')">2. Translate Design to Base</button>
             <button class="tab" onclick="switchTab('emboss')">3. Embossment Tuning</button>
+        </div>
+
+        <!-- Agent Instructions Tab -->
+        <div id="agent-tab" class="tab-content active">
+            <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border-radius: 16px; padding: 24px; margin-bottom: 24px; color: white;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <span style="font-size: 32px;">🤖</span>
+                    <div>
+                        <h2 style="margin: 0; font-size: 20px;">Claude Browser Agent Instructions</h2>
+                        <p style="margin: 4px 0 0 0; opacity: 0.8; font-size: 14px;">Automated workflow for generating embossed notebook product images</p>
+                    </div>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; font-size: 13px;">
+                    <strong>Environment:</strong> You have this page open + a ChatGPT window ready for Step 1
+                </div>
+            </div>
+
+            <div style="background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+                <div style="font-weight: 600; color: #92400e; margin-bottom: 8px;">⚠️ Important: Which AI to Use</div>
+                <div style="font-size: 14px; color: #78350f;">
+                    <strong>Step 1 (Design to Product Mockup):</strong> Use <strong>ChatGPT</strong><br>
+                    <strong>Step 2 (Translate Design to Base):</strong> Use <strong>Gemini</strong><br>
+                    <strong>Step 3 (Embossment Tuning):</strong> Use <strong>Gemini</strong>
+                </div>
+            </div>
+
+            <h3 style="font-size: 16px; margin-bottom: 16px; color: #333;">📋 Step 1: Inspiration → Design (via ChatGPT)</h3>
+
+            <div style="background: white; border: 2px solid #e5e5e5; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                <div style="font-family: monospace; font-size: 13px; line-height: 2; color: #333;">
+                    <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #e5e5e5;">
+                        <strong style="color: #7c3aed;">PHASE 1: Select Inspiration</strong>
+                    </div>
+                    <ol style="margin: 0; padding-left: 20px;">
+                        <li>Click the <strong>"Inspiration Library"</strong> tab</li>
+                        <li>Browse the available inspiration images</li>
+                        <li>Click on an inspiration image to open the preview modal</li>
+                        <li>Click the <strong>"✨ Use in Generator"</strong> button</li>
+                        <li>You will be automatically taken to <strong>"1. Design to Product Mockup"</strong> tab</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div style="background: white; border: 2px solid #e5e5e5; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                <div style="font-family: monospace; font-size: 13px; line-height: 2; color: #333;">
+                    <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #e5e5e5;">
+                        <strong style="color: #3b82f6;">PHASE 2: Configure & Generate in ChatGPT</strong>
+                    </div>
+                    <ol style="margin: 0; padding-left: 20px;">
+                        <li>In the <strong>"1. Design to Product Mockup"</strong> tab:
+                            <ul style="margin: 8px 0; padding-left: 20px;">
+                                <li>Select the <strong>base notebook color</strong> (blue, grey, pink, purple)</li>
+                                <li>Verify the <strong>Image B description</strong> is filled in (auto-filled from inspiration)</li>
+                            </ul>
+                        </li>
+                        <li>Copy <strong>Image A</strong> (base notebook) - right-click → Copy Image</li>
+                        <li>Go to <strong>ChatGPT window</strong> and paste the image</li>
+                        <li>Copy <strong>Image B</strong> (your design) - right-click → Copy Image</li>
+                        <li>Go to <strong>ChatGPT window</strong> and paste the image</li>
+                        <li>Copy <strong>Image C</strong> (embossing reference - bluedog.png) - right-click → Copy Image</li>
+                        <li>Go to <strong>ChatGPT window</strong> and paste the image</li>
+                        <li>Click the <strong>"Copy Prompt"</strong> button on this page</li>
+                        <li>Go to <strong>ChatGPT window</strong> and paste the prompt</li>
+                        <li>Send the message and wait for ChatGPT to generate the embossed notebook image</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div style="background: white; border: 2px solid #e5e5e5; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                <div style="font-family: monospace; font-size: 13px; line-height: 2; color: #333;">
+                    <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #e5e5e5;">
+                        <strong style="color: #22c55e;">PHASE 3: Save Result to Design Library</strong>
+                    </div>
+                    <ol style="margin: 0; padding-left: 20px;">
+                        <li>Once ChatGPT generates the image, <strong>download</strong> or <strong>copy</strong> the result</li>
+                        <li>Click the <strong>"Design Library"</strong> tab on this page</li>
+                        <li>In the upload form:
+                            <ul style="margin: 8px 0; padding-left: 20px;">
+                                <li>Select the appropriate <strong>Category</strong> (Animal, Floral, Pastel)</li>
+                                <li>Select the <strong>Designer</strong> name</li>
+                                <li>Check the <strong>Base Notebook</strong> colors this design works with</li>
+                            </ul>
+                        </li>
+                        <li>Drag & drop or click to upload the generated image</li>
+                        <li>The design is now saved and can be used in Step 2 for color variations</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 2px solid #22c55e; border-radius: 12px; padding: 20px;">
+                <div style="font-weight: 600; color: #166534; margin-bottom: 12px;">✅ Success Criteria</div>
+                <ul style="margin: 0; padding-left: 20px; color: #15803d; font-size: 14px;">
+                    <li>Inspiration image successfully used in generator</li>
+                    <li>All 3 images (A, B, C) uploaded to ChatGPT</li>
+                    <li>Prompt copied and pasted to ChatGPT</li>
+                    <li>ChatGPT generated an embossed notebook image</li>
+                    <li>Result saved to Design Library with correct metadata</li>
+                </ul>
+            </div>
         </div>
 
         <!-- Generator Tab -->
@@ -912,6 +1012,10 @@
                         class="readonly-input"
                     >
                 </div>
+            </div>
+
+            <div style="background: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px;">
+                <span style="font-weight: 600; color: #1e40af;">🔵 Use ChatGPT for this step</span>
             </div>
 
             <h3 style="font-size: 14px; margin-bottom: 16px; color: #333;">Images to upload to ChatGPT <span style="font-weight: 400; color: #999;">(you can copy & paste directly)</span></h3>
@@ -1101,7 +1205,7 @@
         </div>
 
         <!-- Inspiration Library Tab -->
-        <div id="inspiration-tab" class="tab-content active">
+        <div id="inspiration-tab" class="tab-content">
             <div class="gallery-header">
                 <h2>Inspiration Library</h2>
                 <div class="gallery-actions">
@@ -1264,7 +1368,11 @@
                 </div>
             </div>
 
-            <h3 style="font-size: 14px; margin-bottom: 16px; color: #333;">Images to upload to ChatGPT/Gemini <span style="font-weight: 400; color: #999;">(you can copy & paste directly)</span></h3>
+            <div style="background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px;">
+                <span style="font-weight: 600; color: #92400e;">🟡 Use Gemini for this step</span>
+            </div>
+
+            <h3 style="font-size: 14px; margin-bottom: 16px; color: #333;">Images to upload to Gemini <span style="font-weight: 400; color: #999;">(you can copy & paste directly)</span></h3>
 
             <div class="image-grid">
                 <div class="image-card">
@@ -1363,6 +1471,10 @@
                         oninput="generateEmbossPrompt()"
                     >
                 </div>
+            </div>
+
+            <div style="background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px;">
+                <span style="font-weight: 600; color: #92400e;">🟡 Use Gemini for this step</span>
             </div>
 
             <h3 style="font-size: 14px; margin-bottom: 16px; color: #333;">Image to upload to Gemini</h3>
