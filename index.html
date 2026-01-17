@@ -1104,21 +1104,15 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Category</label>
-                        <select id="uploadCategory">
-                            <option value="Animal">Animal</option>
-                            <option value="Floral">Floral</option>
-                            <option value="Pastel">Pastel</option>
-                        </select>
+                        <label>Category <span style="font-weight: 400; color: #888;">(type to add new)</span></label>
+                        <input type="text" id="uploadCategory" list="categoryList" placeholder="Select or type new..." value="Animal">
+                        <datalist id="categoryList"></datalist>
                     </div>
 
                     <div class="form-group">
-                        <label>Designer</label>
-                        <select id="uploadDesigner">
-                            <option value="Helen">Helen</option>
-                            <option value="David">David</option>
-                            <option value="Feb">Feb</option>
-                        </select>
+                        <label>Designer <span style="font-weight: 400; color: #888;">(type to add new)</span></label>
+                        <input type="text" id="uploadDesigner" list="designerList" placeholder="Select or type new..." value="Helen">
+                        <datalist id="designerList"></datalist>
                     </div>
                 </div>
 
@@ -1249,21 +1243,13 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Category</label>
-                        <select id="inspirationCategory">
-                            <option value="Animal">Animal</option>
-                            <option value="Floral">Floral</option>
-                            <option value="Pastel">Pastel</option>
-                        </select>
+                        <label>Category <span style="font-weight: 400; color: #888;">(type to add new)</span></label>
+                        <input type="text" id="inspirationCategory" list="categoryList" placeholder="Select or type new..." value="Animal">
                     </div>
 
                     <div class="form-group">
-                        <label>Designer</label>
-                        <select id="inspirationDesigner">
-                            <option value="Helen">Helen</option>
-                            <option value="David">David</option>
-                            <option value="Feb">Feb</option>
-                        </select>
+                        <label>Designer <span style="font-weight: 400; color: #888;">(type to add new)</span></label>
+                        <input type="text" id="inspirationDesigner" list="designerList" placeholder="Select or type new..." value="Helen">
                     </div>
                 </div>
 
@@ -1579,6 +1565,89 @@
 
         // Design storage
         let designs = [];
+
+        // Dynamic categories and designers
+        let allCategories = new Set(['Animal', 'Floral', 'Pastel']); // Default options
+        let allDesigners = new Set(['Helen', 'David', 'Feb']); // Default options
+
+        // Fetch distinct categories and designers from both tables
+        async function loadCategoriesAndDesigners() {
+            try {
+                // Fetch from designs table
+                const { data: designData } = await supabaseClient
+                    .from('designs')
+                    .select('category, designer');
+
+                if (designData) {
+                    designData.forEach(d => {
+                        if (d.category) allCategories.add(d.category);
+                        if (d.designer) allDesigners.add(d.designer);
+                    });
+                }
+
+                // Fetch from inspirations table
+                const { data: inspData } = await supabaseClient
+                    .from('inspirations')
+                    .select('category, designer');
+
+                if (inspData) {
+                    inspData.forEach(d => {
+                        if (d.category) allCategories.add(d.category);
+                        if (d.designer) allDesigners.add(d.designer);
+                    });
+                }
+
+                // Update all dropdowns and datalists
+                updateCategoryOptions();
+                updateDesignerOptions();
+            } catch (error) {
+                console.error('Error loading categories/designers:', error);
+            }
+        }
+
+        function updateCategoryOptions() {
+            const sorted = Array.from(allCategories).sort();
+
+            // Update datalist
+            const datalist = document.getElementById('categoryList');
+            if (datalist) {
+                datalist.innerHTML = sorted.map(c => `<option value="${c}">`).join('');
+            }
+
+            // Update filter dropdowns
+            const filters = ['filterCategory', 'filterInspirationCategory'];
+            filters.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    const currentValue = select.value;
+                    select.innerHTML = '<option value="">All</option>' +
+                        sorted.map(c => `<option value="${c}">${c}</option>`).join('');
+                    select.value = currentValue;
+                }
+            });
+        }
+
+        function updateDesignerOptions() {
+            const sorted = Array.from(allDesigners).sort();
+
+            // Update datalist
+            const datalist = document.getElementById('designerList');
+            if (datalist) {
+                datalist.innerHTML = sorted.map(d => `<option value="${d}">`).join('');
+            }
+
+            // Update filter dropdowns
+            const filters = ['filterDesigner', 'filterInspirationDesigner'];
+            filters.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    const currentValue = select.value;
+                    select.innerHTML = '<option value="">All</option>' +
+                        sorted.map(d => `<option value="${d}">${d}</option>`).join('');
+                    select.value = currentValue;
+                }
+            });
+        }
         let currentDesign = null;
 
         // Inspiration storage
@@ -1931,6 +2000,16 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
                     if (dbError) throw dbError;
                 }
 
+                // Add new category/designer to options if they're new
+                if (category && !allCategories.has(category)) {
+                    allCategories.add(category);
+                    updateCategoryOptions();
+                }
+                if (designer && !allDesigners.has(designer)) {
+                    allDesigners.add(designer);
+                    updateDesignerOptions();
+                }
+
                 await loadDesigns();
                 setSyncStatus('', 'Synced');
 
@@ -2207,6 +2286,16 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
                         });
 
                     if (dbError) throw dbError;
+                }
+
+                // Add new category/designer to options if they're new
+                if (category && !allCategories.has(category)) {
+                    allCategories.add(category);
+                    updateCategoryOptions();
+                }
+                if (designer && !allDesigners.has(designer)) {
+                    allDesigners.add(designer);
+                    updateDesignerOptions();
                 }
 
                 await loadInspirations();
@@ -2536,6 +2625,7 @@ If the embossing does not clearly read as thick, tactile, and materially raised,
             generatePrompt();
             generateTranslatePrompt();
             generateEmbossPrompt();
+            loadCategoriesAndDesigners(); // Load dynamic categories/designers
             loadInspirations(); // Load inspirations since it's the default tab
         });
 
