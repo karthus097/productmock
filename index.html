@@ -1029,6 +1029,9 @@
                     <div class="image-preview">
                         <img id="imageAPreview" src="Template Images for Product Listing/blue.png" alt="Base notebook">
                     </div>
+                    <div style="padding: 8px; border-top: 1px solid #e5e5e5; text-align: center;">
+                        <button class="btn btn-sm btn-secondary" onclick="copyImageToClipboard('imageAPreview', this)">📋 Copy Image</button>
+                    </div>
                 </div>
 
                 <div class="image-card">
@@ -1037,18 +1040,24 @@
                         <span>bluedog.png</span>
                     </div>
                     <div class="image-preview">
-                        <img src="Template Images for Product Listing/bluedog.png" alt="Embossing reference">
+                        <img id="imageCPreview" src="Template Images for Product Listing/bluedog.png" alt="Embossing reference">
+                    </div>
+                    <div style="padding: 8px; border-top: 1px solid #e5e5e5; text-align: center;">
+                        <button class="btn btn-sm btn-secondary" onclick="copyImageToClipboard('imageCPreview', this)">📋 Copy Image</button>
                     </div>
                 </div>
 
                 <div class="image-card full-width">
                     <div class="image-card-header">
                         <h4>Image B — Your Design</h4>
-                        <span>Upload your own artwork or select from Design Library</span>
+                        <span>Upload your own artwork or select from Inspiration Library</span>
                     </div>
                     <div class="image-preview" id="imageBPreview" style="min-height: 100px; color: #888; font-size: 14px;">
-                        <span id="imageBPlaceholder">Upload your design artwork to ChatGPT</span>
+                        <span id="imageBPlaceholder">Select from Inspiration Library above</span>
                         <img id="imageBSelected" style="display: none;" alt="Selected design">
+                    </div>
+                    <div id="imageBCopyBtn" style="padding: 8px; border-top: 1px solid #e5e5e5; text-align: center; display: none;">
+                        <button class="btn btn-sm btn-secondary" onclick="copyImageToClipboard('imageBSelected', this)">📋 Copy Image</button>
                     </div>
                 </div>
             </div>
@@ -1757,6 +1766,58 @@
             });
         }
 
+        async function copyImageToClipboard(imgId, buttonEl) {
+            const img = document.getElementById(imgId);
+            if (!img || !img.src) {
+                alert('No image to copy');
+                return;
+            }
+
+            try {
+                // Create a canvas to get the image data
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // Wait for image to load if it hasn't
+                if (!img.complete) {
+                    await new Promise(resolve => img.onload = resolve);
+                }
+
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                ctx.drawImage(img, 0, 0);
+
+                // Convert to blob and copy to clipboard
+                canvas.toBlob(async (blob) => {
+                    try {
+                        await navigator.clipboard.write([
+                            new ClipboardItem({ 'image/png': blob })
+                        ]);
+
+                        // Update button text
+                        const originalText = buttonEl.textContent;
+                        buttonEl.textContent = '✅ Copied!';
+                        buttonEl.style.background = '#22c55e';
+                        buttonEl.style.color = 'white';
+                        buttonEl.style.borderColor = '#22c55e';
+
+                        setTimeout(() => {
+                            buttonEl.textContent = originalText;
+                            buttonEl.style.background = '';
+                            buttonEl.style.color = '';
+                            buttonEl.style.borderColor = '';
+                        }, 2000);
+                    } catch (err) {
+                        console.error('Clipboard write failed:', err);
+                        alert('Copy failed. Try right-clicking the image instead.');
+                    }
+                }, 'image/png');
+            } catch (err) {
+                console.error('Image copy failed:', err);
+                alert('Copy failed. Try right-clicking the image instead.');
+            }
+        }
+
         function generatePrompt() {
             const color = document.getElementById('notebookColor').value;
             const imageA = colorDescriptions[color];
@@ -2431,6 +2492,9 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
                 document.getElementById('imageBPlaceholder').style.display = 'none';
                 document.getElementById('imageBSelected').src = currentInspiration.file_url;
                 document.getElementById('imageBSelected').style.display = 'block';
+
+                // Show the copy button for Image B
+                document.getElementById('imageBCopyBtn').style.display = 'block';
 
                 // Regenerate the prompt and automation command
                 generatePrompt();
