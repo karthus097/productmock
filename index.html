@@ -2015,8 +2015,18 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
                 return;
             }
 
-            const category = document.getElementById('uploadCategory').value;
-            const designer = document.getElementById('uploadDesigner').value;
+            const category = document.getElementById('uploadCategory').value.trim();
+            const designer = document.getElementById('uploadDesigner').value.trim();
+
+            // Validate category and designer
+            if (!category) {
+                alert('Please enter a category');
+                return;
+            }
+            if (!designer) {
+                alert('Please enter a designer name');
+                return;
+            }
 
             const uploadZone = document.getElementById('uploadZone');
             const uploadText = document.getElementById('uploadText');
@@ -2024,6 +2034,8 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
             uploadZone.classList.add('uploading');
             uploadText.textContent = 'Uploading...';
             setSyncStatus('syncing', 'Uploading...');
+
+            console.log('Upload started:', { category, designer, selectedNotebooks, fileCount: files.length });
 
             try {
                 for (const file of files) {
@@ -2033,6 +2045,8 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
                     const timestamp = Date.now();
                     const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
                     const filePath = `${category}/${timestamp}_${safeName}`;
+
+                    console.log('Uploading file:', filePath);
 
                     // Upload to storage
                     const { error: uploadError } = await supabaseClient.storage
