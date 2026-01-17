@@ -853,6 +853,7 @@
             <button class="tab" onclick="switchTab('designs')">Design Library</button>
             <button class="tab" onclick="switchTab('generator')">1. Design to Product Mockup</button>
             <button class="tab" onclick="switchTab('translate')">2. Translate Design to Base</button>
+            <button class="tab" onclick="switchTab('emboss')">3. Embossment Tuning</button>
         </div>
 
         <!-- Generator Tab -->
@@ -1304,6 +1305,100 @@
                 </div>
                 <div class="output-content">
                     <div id="translatePromptOutput"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Embossment Tuning Tab -->
+        <div id="emboss-tab" class="tab-content">
+            <div class="instructions">
+                <h3>How to use</h3>
+                <ol>
+                    <li>Upload your notebook image to Gemini (the design on base notebook that needs embossing)</li>
+                    <li>Fill in the thickness, elements to emboss, and any exclusions below</li>
+                    <li>Copy the generated prompt and paste it into Gemini</li>
+                    <li>May need to adjust the coin/mm values if output isn't quite right</li>
+                </ol>
+            </div>
+
+            <div class="input-section">
+                <div class="input-group">
+                    <label>
+                        Embossing Thickness <span class="label-hint">(use coins for reference)</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="embossThickness"
+                        placeholder="e.g., two stacked 1-p coins (1.5 mm total height)"
+                        value="two stacked 1-p coins (1.5 mm total height)"
+                        oninput="generateEmbossPrompt()"
+                    >
+                    <div class="explainer-hint" style="margin-top: 8px;">
+                        <span class="hand-pointer">💡</span>
+                        <span class="hint-text">Try different coin references if the output is too embossed or not enough</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>
+                        Elements to be Embossed <span class="label-hint">(specify what parts should have embossing)</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="embossElements"
+                        placeholder="e.g., the design artifacts on the notebook's cover"
+                        value="the design artifacts on the notebook's cover"
+                        oninput="generateEmbossPrompt()"
+                    >
+                </div>
+
+                <div class="input-group">
+                    <label>
+                        Areas NOT to Emboss <span class="label-hint">(optional - leave blank if not needed)</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="embossExclude"
+                        placeholder="e.g., the watercolour background, text elements"
+                        oninput="generateEmbossPrompt()"
+                    >
+                </div>
+            </div>
+
+            <h3 style="font-size: 14px; margin-bottom: 16px; color: #333;">Image to upload to Gemini</h3>
+
+            <div class="image-grid">
+                <div class="image-card full-width">
+                    <div class="image-card-header">
+                        <h4>Your Notebook Image</h4>
+                        <span>Upload to Gemini - the design on base notebook that needs embossing</span>
+                    </div>
+                    <div class="image-preview" style="min-height: 150px; color: #888; font-size: 14px; background: #f0f0f0;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 32px; margin-bottom: 8px;">📤</div>
+                            <div>Upload your notebook image directly to Gemini</div>
+                            <div style="font-size: 12px; color: #aaa; margin-top: 4px;">(Image with design that needs embossing effect)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <div class="output-header">
+                    <h2>Generated Prompt</h2>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 12px; color: #f59e0b; font-weight: 500;">⚠️ Remember to upload your image to Gemini</span>
+                        <button class="copy-btn" onclick="copyEmbossPrompt()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            <span id="copyEmbossText">Copy Prompt</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="output-content">
+                    <div id="embossPromptOutput"></div>
                 </div>
             </div>
         </div>
@@ -2234,10 +2329,101 @@ Translate the design from image 1 onto image 2, ensure that the output is exactl
             });
         }
 
+        // ===== EMBOSS TAB FUNCTIONS =====
+
+        function generateEmbossPrompt() {
+            const thickness = document.getElementById('embossThickness').value || '[Specify thickness]';
+            const elements = document.getElementById('embossElements').value || '[Specify elements to emboss]';
+            const exclude = document.getElementById('embossExclude').value;
+
+            let excludeSection = '';
+            if (exclude && exclude.trim()) {
+                excludeSection = `
+Do NOT emboss: ${exclude}`;
+            }
+
+            const prompt = `TASK
+Edit the provided notebook image.
+This is a photorealistic product image edit, not a new image generation.
+The goal is to accurately simulate heavy, physical UV embossing on an existing notebook design.
+
+LOCKED ELEMENTS — ABSOLUTELY DO NOT CHANGE
+The following must remain pixel-identical to the input image:
+• Notebook shape, size, thickness, and proportions
+• Camera angle, perspective, framing, and crop
+• Lighting direction, intensity, and overall exposure
+• Background, surface, and shadows
+• Notebook material (smooth PU leather texture)
+• Base colour of the notebook
+• Artwork placement, scale, orientation, and design
+• Overall composition
+
+⚠️ Any change to these elements is a failure.
+
+MANUFACTURING CONTEXT (READ CAREFULLY)
+The notebook design is produced using multiple layered passes of UV-cured ink, not flat printing.
+Each pass adds real physical height, creating a thick, tactile relief that can be felt by hand.
+You must visually simulate this physical build-up of material, not a painted or digital effect.
+The raised ink should appear approximately as thick as ${thickness}.
+This thickness must be clearly visible at normal viewing distance, without zooming.
+
+EMBOSS TARGET (ONLY EDIT THIS AREA)
+Embossed element: ${elements}
+No other areas should gain depth.${excludeSection}
+
+REQUIRED EMBOSSING CHARACTERISTICS (CRITICAL)
+The embossed design must convincingly appear to physically rise out of the leather surface, with:
+• Visible vertical thickness before edges round off
+• Rounded, resin-like edge roll-off, not sharp or graphic edges
+• Bright highlights along light-facing curved edges of the embossing
+• Softer shading on the opposite side, consistent with existing lighting
+
+The effect must read as solid material, not a filter, bevel, or contrast adjustment.
+
+LEATHER INTERACTION (IMPORTANT REALISM DETAIL)
+The leather texture must:
+• Continue naturally underneath the embossed area
+• Appear slightly compressed and flattened near raised edges, as if pressed by thick ink
+• Remain smooth and untouched everywhere else
+
+There must be no embossing, texture change, or height in the background leather.
+
+STRICT PROHIBITIONS (DO NOT DO THESE)
+• Do NOT redraw, repaint, or reinterpret the artwork
+• Do NOT add outlines, stickers, borders, glows, or halos
+• Do NOT make the design look pasted, floating, or layered
+• Do NOT change colour balance, saturation, or contrast globally
+• Do NOT zoom, crop, or reframe the image
+
+SUCCESS CRITERIA
+A successful result should make the viewer think:
+"This design is made from thick, layered UV resin ink that you could physically feel with your fingers."
+
+If the embossing does not clearly read as thick, tactile, and materially raised, the task is not complete.`;
+
+            document.getElementById('embossPromptOutput').textContent = prompt;
+        }
+
+        function copyEmbossPrompt() {
+            const promptText = document.getElementById('embossPromptOutput').textContent;
+            navigator.clipboard.writeText(promptText).then(() => {
+                const btn = document.querySelector('#emboss-tab .copy-btn');
+                const copyText = document.getElementById('copyEmbossText');
+                btn.classList.add('copied');
+                copyText.textContent = 'Copied!';
+
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    copyText.textContent = 'Copy Prompt';
+                }, 2000);
+            });
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             generatePrompt();
             generateTranslatePrompt();
+            generateEmbossPrompt();
             loadInspirations(); // Load inspirations since it's the default tab
         });
 
