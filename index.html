@@ -1071,6 +1071,27 @@
                     <div id="promptOutput"></div>
                 </div>
             </div>
+
+            <!-- Automation Section -->
+            <div class="automation-section" style="margin-top: 24px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 2px solid #0ea5e9; border-radius: 12px; padding: 20px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <span style="font-size: 24px;">🤖</span>
+                    <h3 style="margin: 0; font-size: 16px; color: #0369a1;">Playwright Automation</h3>
+                    <span style="background: #0ea5e9; color: white; font-size: 11px; padding: 2px 8px; border-radius: 10px;">Beta</span>
+                </div>
+                <p style="font-size: 13px; color: #0c4a6e; margin-bottom: 12px;">
+                    Run this command in your terminal to automate ChatGPT image generation:
+                </p>
+                <div style="background: #1e293b; border-radius: 8px; padding: 12px 16px; position: relative;">
+                    <code id="automationCommand" style="font-family: 'SF Mono', Monaco, monospace; font-size: 12px; color: #e2e8f0; display: block; white-space: pre-wrap; word-break: break-all;"></code>
+                    <button onclick="copyAutomationCommand()" style="position: absolute; top: 8px; right: 8px; background: #334155; border: none; color: #94a3b8; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">
+                        <span id="copyAutoText">Copy</span>
+                    </button>
+                </div>
+                <p style="font-size: 12px; color: #64748b; margin-top: 12px; margin-bottom: 0;">
+                    First time? Run <code style="background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">cd automation && npm install && npm run setup</code> to install dependencies.
+                </p>
+            </div>
         </div>
 
         <!-- Design Library Tab -->
@@ -1696,6 +1717,32 @@
             generatePrompt();
         }
 
+        function generateAutomationCommand() {
+            const color = document.getElementById('notebookColor').value;
+            const design = document.getElementById('imageB').value || '';
+
+            if (!design) {
+                document.getElementById('automationCommand').textContent =
+                    'node step1-chatgpt.js --color ' + color + ' --design "YOUR_DESIGN_DESCRIPTION"';
+            } else {
+                // Escape quotes in the design description
+                const escapedDesign = design.replace(/"/g, '\\"');
+                document.getElementById('automationCommand').textContent =
+                    'node step1-chatgpt.js --color ' + color + ' --design "' + escapedDesign + '"';
+            }
+        }
+
+        function copyAutomationCommand() {
+            const command = document.getElementById('automationCommand').textContent;
+            navigator.clipboard.writeText(command).then(() => {
+                const btn = document.getElementById('copyAutoText');
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+
         function generatePrompt() {
             const color = document.getElementById('notebookColor').value;
             const imageA = colorDescriptions[color];
@@ -1833,6 +1880,7 @@ If not, increase embossing depth, edge highlights, and contact shadows until it 
 Ensure the output is a high quality 4k resolution image with absolutely no fuzziness or grain.`;
 
             document.getElementById('promptOutput').textContent = prompt;
+            generateAutomationCommand();
         }
 
         function copyPrompt() {
@@ -2623,6 +2671,7 @@ If the embossing does not clearly read as thick, tactile, and materially raised,
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             generatePrompt();
+            generateAutomationCommand();
             generateTranslatePrompt();
             generateEmbossPrompt();
             loadCategoriesAndDesigners(); // Load dynamic categories/designers

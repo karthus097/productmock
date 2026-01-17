@@ -1,0 +1,14 @@
+{
+  "name": "productmockup-automation",
+  "version": "1.0.0",
+  "description": "Playwright automation for product mockup generation with ChatGPT",
+  "type": "module",
+  "scripts": {
+    "step1": "node step1-chatgpt.js",
+    "step1:headed": "HEADLESS=false node step1-chatgpt.js",
+    "setup": "npx playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0"
+  }
+}
