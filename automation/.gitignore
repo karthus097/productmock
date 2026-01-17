@@ -1,0 +1,11 @@
+# Browser data (contains login sessions)
+.browser-data/
+
+# Dependencies
+node_modules/
+
+# Output files
+output/
+
+# Temp files
+.temp/

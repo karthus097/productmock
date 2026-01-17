@@ -1717,19 +1717,32 @@
             generatePrompt();
         }
 
+        // Track selected inspiration for automation
+        let selectedInspirationId = null;
+
         function generateAutomationCommand() {
             const color = document.getElementById('notebookColor').value;
             const design = document.getElementById('imageB').value || '';
 
+            let command = 'node step1-chatgpt.js --color ' + color;
+
+            // If we have a selected inspiration, use --inspirationId (auto-fetches image + description)
+            if (selectedInspirationId) {
+                command += ' --inspirationId "' + selectedInspirationId + '"';
+                document.getElementById('automationCommand').textContent = command;
+                return;
+            }
+
+            // Otherwise use the manual design description
             if (!design) {
-                document.getElementById('automationCommand').textContent =
-                    'node step1-chatgpt.js --color ' + color + ' --design "YOUR_DESIGN_DESCRIPTION"';
+                command += ' --design "YOUR_DESIGN_DESCRIPTION"';
             } else {
                 // Escape quotes in the design description
                 const escapedDesign = design.replace(/"/g, '\\"');
-                document.getElementById('automationCommand').textContent =
-                    'node step1-chatgpt.js --color ' + color + ' --design "' + escapedDesign + '"';
+                command += ' --design "' + escapedDesign + '"';
             }
+
+            document.getElementById('automationCommand').textContent = command;
         }
 
         function copyAutomationCommand() {
@@ -2393,6 +2406,9 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
 
         function useInspiration() {
             if (currentInspiration) {
+                // Store the inspiration ID for automation
+                selectedInspirationId = currentInspiration.id;
+
                 // Set the description in the generator
                 document.getElementById('imageB').value = currentInspiration.description;
 
@@ -2401,7 +2417,7 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
                 document.getElementById('imageBSelected').src = currentInspiration.file_url;
                 document.getElementById('imageBSelected').style.display = 'block';
 
-                // Regenerate the prompt
+                // Regenerate the prompt and automation command
                 generatePrompt();
 
                 closeInspirationModal();
@@ -2678,7 +2694,11 @@ If the embossing does not clearly read as thick, tactile, and materially raised,
             loadInspirations(); // Load inspirations since it's the default tab
         });
 
-        document.getElementById('imageB').addEventListener('input', generatePrompt);
+        document.getElementById('imageB').addEventListener('input', () => {
+            // Clear inspiration ID when user manually edits
+            selectedInspirationId = null;
+            generatePrompt();
+        });
     </script>
 </body>
 </html>

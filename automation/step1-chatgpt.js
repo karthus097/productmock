@@ -4,24 +4,41 @@
  * This script automates the ChatGPT interaction for generating embossed notebook mockups.
  *
  * Usage:
+ *   # Text-only (ChatGPT imagines the design):
  *   node step1-chatgpt.js --color blue --design "watercolor floral pattern with roses"
- *   node step1-chatgpt.js --color pink --design "cute cartoon cat illustration" --designImage "./my-design.png"
+ *
+ *   # With local design image:
+ *   node step1-chatgpt.js --color pink --design "cute cat" --designImage "./my-design.png"
+ *
+ *   # From Inspiration Library (fetches image + description automatically):
+ *   node step1-chatgpt.js --color blue --inspirationId "abc123-uuid"
+ *
+ *   # With design URL (from Supabase or any URL):
+ *   node step1-chatgpt.js --color purple --designUrl "https://..." --design "floral pattern"
  *
  * Options:
- *   --color         Notebook color: blue, grey, pink, purple (default: blue)
- *   --design        Description of the design for Image B (required)
- *   --designImage   Path to custom design image (optional, uses placeholder if not provided)
- *   --output        Output folder for downloaded images (default: ./output)
- *   --headless      Run in headless mode (default: false for first run to login)
+ *   --color          Notebook color: blue, grey, pink, purple (default: blue)
+ *   --design         Description of the design for Image B
+ *   --designImage    Path to local design image file
+ *   --designUrl      URL to design image (will be downloaded)
+ *   --inspirationId  Supabase inspiration ID (fetches image + description)
+ *   --output         Output folder for downloaded images (default: ./output)
+ *   --headless       Run in headless mode (default: false for first run to login)
  */
 
 import { chromium } from 'playwright';
 import path from 'path';
 import fs from 'fs';
+import https from 'https';
+import http from 'http';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Supabase config (same as web UI)
+const SUPABASE_URL = 'https://jyosixwjbsahcctyakdi.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_S5JGtvltlC1Q314L50QR4A_zYvzDjCR';
 
 // Parse command line arguments
 function parseArgs() {
@@ -30,6 +47,8 @@ function parseArgs() {
         color: 'blue',
         design: '',
         designImage: '',
+        designUrl: '',
+        inspirationId: '',
         output: path.join(__dirname, 'output'),
         headless: process.env.HEADLESS === 'true'
     };
@@ -45,6 +64,12 @@ function parseArgs() {
             case '--designImage':
                 options.designImage = args[++i];
                 break;
+            case '--designUrl':
+                options.designUrl = args[++i];
+                break;
+            case '--inspirationId':
+                options.inspirationId = args[++i];
+                break;
             case '--output':
                 options.output = args[++i];
                 break;
@@ -55,6 +80,56 @@ function parseArgs() {
     }
 
     return options;
+}
+
+// Fetch inspiration from Supabase
+async function fetchInspiration(id) {
+    const url = `${SUPABASE_URL}/rest/v1/inspirations?id=eq.${id}&select=*`;
+
+    const response = await fetch(url, {
+        headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch inspiration: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    if (!data || data.length === 0) {
+        throw new Error(`Inspiration not found: ${id}`);
+    }
+
+    return data[0];
+}
+
+// Download image from URL to temp file
+async function downloadImage(url, outputPath) {
+    return new Promise((resolve, reject) => {
+        const protocol = url.startsWith('https') ? https : http;
+        const file = fs.createWriteStream(outputPath);
+
+        protocol.get(url, (response) => {
+            if (response.statusCode === 301 || response.statusCode === 302) {
+                // Follow redirect
+                downloadImage(response.headers.location, outputPath)
+                    .then(resolve)
+                    .catch(reject);
+                return;
+            }
+
+            response.pipe(file);
+            file.on('finish', () => {
+                file.close();
+                resolve(outputPath);
+            });
+        }).on('error', (err) => {
+            fs.unlink(outputPath, () => {});
+            reject(err);
+        });
+    });
 }
 
 // Generate the prompt for Step 1
@@ -205,21 +280,60 @@ Ensure the output is a high quality 4k resolution image with absolutely no fuzzi
 async function runStep1Automation(options) {
     console.log('\n🎨 Step 1: Design to Product Mockup Automation');
     console.log('━'.repeat(50));
+
+    // Ensure output directory exists
+    if (!fs.existsSync(options.output)) {
+        fs.mkdirSync(options.output, { recursive: true });
+    }
+
+    // Handle inspiration ID - fetch from Supabase
+    if (options.inspirationId) {
+        console.log(`📥 Fetching inspiration: ${options.inspirationId}`);
+        try {
+            const inspiration = await fetchInspiration(options.inspirationId);
+            options.design = inspiration.description;
+            options.designUrl = inspiration.file_url;
+            console.log(`   ✅ Found: "${inspiration.description}"`);
+        } catch (error) {
+            console.error(`\n❌ Error fetching inspiration: ${error.message}`);
+            process.exit(1);
+        }
+    }
+
+    // Handle design URL - download to temp file
+    let imageBPath = options.designImage;
+    if (options.designUrl && !imageBPath) {
+        console.log(`📥 Downloading design image...`);
+        const tempDir = path.join(options.output, '.temp');
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, { recursive: true });
+        }
+        const tempFile = path.join(tempDir, `design_${Date.now()}.png`);
+        try {
+            await downloadImage(options.designUrl, tempFile);
+            imageBPath = tempFile;
+            console.log(`   ✅ Downloaded to temp file`);
+        } catch (error) {
+            console.error(`\n❌ Error downloading image: ${error.message}`);
+            process.exit(1);
+        }
+    }
+
     console.log(`📓 Notebook Color: ${options.color}`);
     console.log(`🖼️  Design: ${options.design}`);
+    if (imageBPath) {
+        console.log(`📷 Design Image: ${imageBPath}`);
+    }
     console.log(`📁 Output: ${options.output}`);
     console.log('━'.repeat(50));
 
     // Validate inputs
     if (!options.design) {
-        console.error('\n❌ Error: --design is required');
-        console.log('Usage: node step1-chatgpt.js --color blue --design "your design description"');
+        console.error('\n❌ Error: --design is required (or use --inspirationId)');
+        console.log('Usage:');
+        console.log('  node step1-chatgpt.js --color blue --design "your design description"');
+        console.log('  node step1-chatgpt.js --color blue --inspirationId "uuid-from-library"');
         process.exit(1);
-    }
-
-    // Ensure output directory exists
-    if (!fs.existsSync(options.output)) {
-        fs.mkdirSync(options.output, { recursive: true });
     }
 
     // Set up paths to template images
@@ -238,8 +352,10 @@ async function runStep1Automation(options) {
         process.exit(1);
     }
 
-    // Check for design image
-    let imageBPath = options.designImage;
+    // Check for local design image
+    if (options.designImage && !imageBPath) {
+        imageBPath = options.designImage;
+    }
     if (imageBPath && !fs.existsSync(imageBPath)) {
         console.error(`\n❌ Error: Design image not found: ${imageBPath}`);
         process.exit(1);
